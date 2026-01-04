@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大大橙子 - 个人开发者</title>
+    <style>
+        /* 橙色调主题 */
+        :root {
+            --primary-color: #FF8C00;
+            --secondary-color: #FFA500;
+            --light-color: #FFE4B5;
+            --dark-color: #FF4500;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            line-height: 1.6;
+            color: #333;
+        }
+        section, footer { padding: 20px 5%; }
+        .hero { 
+            text-align: center; 
+            padding: 80px 0; 
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://images.unsplash.com/photo-1639762681057-408e52192e55?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+        .hero h1 {
+            color: white;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .hero p.tagline {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .portfolio-grid { 
+            display: flex; 
+            justify-content: space-around; 
+            flex-wrap: wrap; 
+            margin: 30px 0;
+        }
+        .item { 
+            width: 30%; 
+            margin-bottom: 20px; 
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            background-color: white;
+        }
+        .word-dictation {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://img.freepik.com/free-vector/hand-drawn-anime-school-background_23-2149430434.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            cursor: pointer;
+            position: relative;
+        }
+        .stroop-training {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            cursor: pointer;
+            position: relative;
+        }
+        .soulte-training {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            cursor: pointer;
+            position: relative;
+        }
+        .word-dictation::after,
+        .stroop-training::after,
+        .soulte-training::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 8px;
+        }
+        .word-dictation:hover::after,
+        .stroop-training:hover::after,
+        .soulte-training:hover::after {
+            opacity: 1;
+        }
+        .item:hover {
+            transform: translateY(-5px);
+        }
+        .cta-button { 
+            display: inline-block; 
+            padding: 12px 24px; 
+            background: var(--primary-color); 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 30px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+        .cta-button:hover {
+            background: var(--dark-color);
+            transform: scale(1.05);
+        }
+        footer { 
+            text-align: center; 
+            background: var(--dark-color); 
+            color: white; 
+            padding: 30px 0;
+        }
+        footer a {
+            color: white;
+            margin: 0 10px;
+        }
+        
+        /* 二维码弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 8% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 320px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+            position: relative;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+        .close:hover {
+            color: var(--dark-color);
+        }
+        .qr-code-container {
+            margin: 20px auto;
+            width: 250px;
+            height: 250px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .qr-code {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .wechat-info {
+            margin-top: 15px;
+        }
+        .wechat-info h3 {
+            margin: 5px 0;
+            color: #333;
+            font-size: 1.4rem;
+        }
+        .scan-tip {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <!-- 个人形象展示区 -->
+    <section class="hero">
+        <h1>我是大大橙子</h1>
+        <p class="tagline">个人开发者 | 创意实现者</p>
+        <p>"用代码编织梦想，让创意照亮现实"</p>
+    </section>
+
+    <!-- 作品展示区 -->
+    <section>
+        <h2 style="text-align: center; color: var(--dark-color);">精选作品</h2>
+        <div class="portfolio-grid">
+            <div class="item word-dictation" onclick="window.location.href='https://15277266723.github.io/test/%E5%8D%95%E8%AF%8D%E5%90%AC%E5%86%99%E5%B7%A5%E5%85%B714.html'">
+                <h3>单词听写工具</h3>
+                <p>智能英语学习工具，支持自定义词库和语音听写</p>
+            </div>
+            <div class="item stroop-training" onclick="window.location.href='https://15277266723.github.io/test/Stroop%E8%AE%AD%E7%BB%83%E7%BD%91%E9%A1%B5.html'">
+                <h3>Stroop训练</h3>
+                <p>认知训练工具，提升注意力与反应速度</p>
+            </div>
+            <div class="item soulte-training" onclick="window.location.href='https://15277266723.github.io/test/%E8%8B%8F%E5%B0%94%E7%89%B9%E8%AE%AD%E7%BB%83.HTML'">
+                <h3>苏尔特训练</h3>
+                <p>高级认知训练系统，提升大脑反应能力</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 行动号召区 -->
+    <section style="text-align: center; padding: 60px 5%; background: var(--light-color);">
+        <h2 style="color: var(--dark-color);">让我们一起创造些酷炫的东西</h2>
+        <p>有项目想法或合作机会？我很乐意听到你的声音。</p>
+        <button id="wechatBtn" class="cta-button">立即联系</button>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>&copy; 2026 大大橙子. 版权所有. | <a href="privacy.html" style="color: white;">隐私政策</a></p>
+        <p>
+            <a href="https://weibo.com/">微博</a> | 
+            <a href="https://github.com/">GitHub</a> | 
+            <a href="https://linkedin.com/">LinkedIn</a>
+        </p>
+    </footer>
+
+    <!-- 微信二维码弹窗 -->
+    <div id="wechatModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 style="color: var(--dark-color);">添加我的微信</h2>
+            
+            <div class="qr-code-container">
+                <!-- 这里使用本地图片文件ewm.jpg -->
+                <img class="qr-code" src="ewm.jpg" alt="大大橙子微信二维码">
+            </div>
+            
+            <div class="wechat-info">
+                <h3>大大橙子</h3>
+                <p>个人开发者 | 创意实现者</p>
+            </div>
+            
+            <div class="scan-tip">
+                扫一扫上面的二维码图案<br>加我为朋友
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取弹窗元素
+        const modal = document.getElementById("wechatModal");
+        const btn = document.getElementById("wechatBtn");
+        const span = document.getElementsByClassName("close")[0];
+        
+        // 点击"立即联系"按钮打开弹窗
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+        
+        // 点击关闭按钮关闭弹窗
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+        
+        // 点击弹窗外部关闭弹窗
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+        
+        // ESC键关闭弹窗
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modal.style.display === 'block') {
+                modal.style.display = 'none';
+            }
+        });
+        
+        // 点击单词听写工具卡片跳转
+        const wordDictationCard = document.querySelector('.word-dictation');
+        if (wordDictationCard) {
+            wordDictationCard.onclick = function() {
+                window.location.href = 'https://15277266723.github.io/test/%E5%8D%95%E8%AF%8D%E5%90%AC%E5%86%99%E5%B7%A5%E5%85%B714.html';
+            }
+        }
+        
+        // 点击Stroop训练卡片跳转
+        const stroopTrainingCard = document.querySelector('.stroop-training');
+        if (stroopTrainingCard) {
+            stroopTrainingCard.onclick = function() {
+                window.location.href = 'https://15277266723.github.io/test/Stroop%E8%AE%AD%E7%BB%83%E7%BD%91%E9%A1%B5.html';
+            }
+        }
+        
+        // 点击苏尔特训练卡片跳转
+        const soulteTrainingCard = document.querySelector('.soulte-training');
+        if (soulteTrainingCard) {
+            soulteTrainingCard.onclick = function() {
+                window.location.href = 'https://15277266723.github.io/test/%E8%8B%8F%E5%B0%94%E7%89%B9%E8%AE%AD%E7%BB%83.HTML';
+            }
+        }
+    </script>
+</body>
+</html>
