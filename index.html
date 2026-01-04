@@ -48,7 +48,7 @@
             margin: 30px 0;
         }
         .item { 
-            width: 30%; 
+            width: 22%; 
             margin-bottom: 20px; 
             text-align: center;
             padding: 20px;
@@ -84,9 +84,19 @@
             cursor: pointer;
             position: relative;
         }
+        .memory-training {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+                        url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            cursor: pointer;
+            position: relative;
+        }
         .word-dictation::after,
         .stroop-training::after,
-        .soulte-training::after {
+        .soulte-training::after,
+        .memory-training::after {
             content: '';
             position: absolute;
             top: 0;
@@ -100,7 +110,8 @@
         }
         .word-dictation:hover::after,
         .stroop-training:hover::after,
-        .soulte-training:hover::after {
+        .soulte-training:hover::after,
+        .memory-training:hover::after {
             opacity: 1;
         }
         .item:hover {
@@ -234,6 +245,10 @@
                 <h3>苏尔特训练</h3>
                 <p>高级认知训练系统，提升大脑反应能力</p>
             </div>
+            <div class="item memory-training" onclick="window.location.href='https://15277266723.github.io/test/%E5%BA%8F%E5%88%97%E5%B7%A5%E4%BD%9C%E8%AE%B0%E5%BF%86%E8%AE%AD%E7%BB%83%E7%BD%91%E9%A1%B5.html'">
+                <h3>序列工作记忆训练</h3>
+                <p>增强工作记忆能力的科学训练系统</p>
+            </div>
         </div>
     </section>
 
@@ -327,6 +342,14 @@
         if (soulteTrainingCard) {
             soulteTrainingCard.onclick = function() {
                 window.location.href = 'https://15277266723.github.io/test/%E8%8B%8F%E5%B0%94%E7%89%B9%E8%AE%AD%E7%BB%83.HTML';
+            }
+        }
+        
+        // 点击序列工作记忆训练卡片跳转
+        const memoryTrainingCard = document.querySelector('.memory-training');
+        if (memoryTrainingCard) {
+            memoryTrainingCard.onclick = function() {
+                window.location.href = 'https://15277266723.github.io/test/%E5%BA%8F%E5%88%97%E5%B7%A5%E4%BD%9C%E8%AE%B0%E5%BF%86%E8%AE%AD%E7%BB%83%E7%BD%91%E9%A1%B5.html';
             }
         }
     </script>
