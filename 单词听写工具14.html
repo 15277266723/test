@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词听写工具1.4</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .setting-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input[type="number"], select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .progress-container {
+            margin-top: 15px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #4299e1;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .current-word {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 36px;
+        }
+        
+        .masked-word {
+            display: inline-block;
+            background: #333;
+            color: transparent;
+            padding: 0 10px;
+            border-radius: 4px;
+            position: relative;
+            min-width: 80px;
+            height: 30px;
+        }
+        
+        .masked-word::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                -45deg,
+                #444,
+                #444 2px,
+                #333 2px,
+                #333 4px
+            );
+        }
+        
+        .result-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ebf8ff;
+            border-radius: 8px;
+            border: 1px solid #bee3f8;
+        }
+        
+        /* 修复遮挡样式 - 确保只遮挡输入区域 */
+        .masked-input {
+            position: relative;
+        }
+        
+        .masked-input::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #333;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                #444,
+                #444 2px,
+                #333 2px,
+                #333 4px
+            );
+            border-radius: 4px;
+            z-index: 1;
+            display: none;
+        }
+        
+        .dictation-active .masked-input::after {
+            display: block;
+        }
+        
+        /* 确保按钮始终可见 */
+        .button-section {
+            position: relative;
+            z-index: 10;
+        }
+        
+        @media (max-width: 600px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>单词听写工具1.4</h1>
+        
+        <div class="section">
+            <h2>听写内容</h2>
+            <div class="masked-input">
+                <textarea id="wordInput" placeholder="请输入要听写的单词或句子，每行一个"></textarea>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>听写设置</h2>
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <label for="repeatCount">每个单词重复次数</label>
+                    <input type="number" id="repeatCount" min="1" max="10" value="3">
+                </div>
+                <div class="setting-group">
+                    <label for="interval">播放间隔(秒)</label>
+                    <input type="number" id="interval" min="1" max="60" value="5">
+                </div>
+                <div class="setting-group">
+                    <label for="voiceSelect">发音人</label>
+                    <select id="voiceSelect">
+                        <option value="">默认发音人</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="rateSelect">语速</label>
+                    <select id="rateSelect">
+                        <option value="0.8">慢速</option>
+                        <option value="1" selected>正常</option>
+                        <option value="1.2">快速</option>
+                    </select>
+                </div>
+                <div class="setting-group shuffle-option">
+                    <label>
+                        <input type="checkbox" id="shuffleCheckbox"> 打乱单词顺序
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section button-section">
+            <div class="button-group">
+                <button id="previewBtn" class="btn btn-secondary">预览发音</button>
+                <button id="startBtn" class="btn btn-primary">开始听写</button>
+                <button id="pauseBtn" class="btn btn-secondary" disabled>暂停</button>
+                <button id="stopBtn" class="btn btn-secondary" disabled>停止</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>听写进度</h2>
+            <div class="current-word" id="currentWord">准备就绪</div>
+            <div class="progress-container">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>进度: <span id="progressPercent">0%</span></span>
+                    <span><span id="currentStep">0</span>/<span id="totalSteps">0</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result-area" id="resultArea" style="display: none;">
+            <h2>听写结果</h2>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素
+        const wordInput = document.getElementById('wordInput');
+        const repeatCount = document.getElementById('repeatCount');
+        const interval = document.getElementById('interval');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const rateSelect = document.getElementById('rateSelect');
+        const shuffleCheckbox = document.getElementById('shuffleCheckbox');
+        const previewBtn = document.getElementById('previewBtn');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const currentWord = document.getElementById('currentWord');
+        const progressPercent = document.getElementById('progressPercent');
+        const currentStep = document.getElementById('currentStep');
+        const totalSteps = document.getElementById('totalSteps');
+        const progressBar = document.getElementById('progressBar');
+        const resultArea = document.getElementById('resultArea');
+        const resultContent = document.getElementById('resultContent');
+        
+        // 全局变量
+        let words = [];
+        let currentWordIndex = 0;
+        let currentRepeat = 0;
+        let isPlaying = false;
+        let isPaused = false;
+        let timer = null;
+        let speech = null;
+        
+        // 初始化语音功能
+        function initSpeech() {
+            if (!('speechSynthesis' in window)) {
+                alert('您的浏览器不支持语音合成功能');
+                previewBtn.disabled = true;
+                startBtn.disabled = true;
+                return;
+            }
+            
+            // 加载发音人列表
+            loadVoices();
+            
+            // 发音人列表变化时重新加载
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        
+        // 加载发音人
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            voiceSelect.innerHTML = '<option value="">默认发音人</option>';
+            
+            voices.forEach(voice => {
+                if (voice.lang.includes('zh') || voice.lang.includes('en')) {
+                    const option = document.createElement('option');
+                    option.value = voice.name;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    voiceSelect.appendChild(option);
+                }
+            });
+        }
+        
+        // 解析输入内容
+        function parseWords(text) {
+            return text.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+        }
+        
+        // 打乱数组
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        // 朗读单词
+        function speakWord(word) {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.rate = parseFloat(rateSelect.value);
+            
+            // 设置发音人
+            const selectedVoice = voiceSelect.value;
+            if (selectedVoice) {
+                const voices = speechSynthesis.getVoices();
+                const voice = voices.find(v => v.name === selectedVoice);
+                if (voice) utterance.voice = voice;
+            }
+            
+            speechSynthesis.speak(utterance);
+            return utterance;
+        }
+        
+        // 预览发音
+        function previewSpeech() {
+            const text = wordInput.value.trim();
+            if (!text) {
+                alert('请输入要预览的内容');
+                return;
+            }
+            
+            const wordArray = parseWords(text);
+            if (wordArray.length === 0) {
+                alert('没有检测到有效内容');
+                return;
+            }
+            
+            currentWord.innerHTML = `预览: <span>${wordArray[0]}</span>`;
+            speakWord(wordArray[0]);
+        }
+        
+        // 开始听写
+        function startDictation() {
+            const text = wordInput.value.trim();
+            if (!text) {
+                alert('请输入要听写的内容');
+                return;
+            }
+            
+            // 解析单词
+            let wordArray = parseWords(text);
+            if (wordArray.length === 0) {
+                alert('没有检测到有效内容');
+                return;
+            }
+            
+            // 如果需要打乱顺序
+            if (shuffleCheckbox.checked) {
+                wordArray = shuffleArray(wordArray);
+            }
+            
+            words = wordArray;
+            
+            // 添加遮挡类
+            document.body.classList.add('dictation-active');
+            
+            currentWordIndex = 0;
+            currentRepeat = 0;
+            isPlaying = true;
+            isPaused = false;
+            
+            // 更新UI状态
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            stopBtn.disabled = false;
+            wordInput.disabled = true;
+            previewBtn.disabled = true;
+            resultArea.style.display = 'none';
+            
+            // 计算总步数
+            const totalRepeats = parseInt(repeatCount.value);
+            const total = words.length * totalRepeats;
+            totalSteps.textContent = total;
+            
+            // 开始听写
+            playNextWord();
+        }
+        
+        // 播放下一个单词
+        function playNextWord() {
+            if (!isPlaying) return;
+            
+            if (currentWordIndex >= words.length) {
+                finishDictation();
+                return;
+            }
+            
+            const word = words[currentWordIndex];
+            currentWord.innerHTML = `当前播放: <span class="masked-word"></span> (${currentRepeat + 1}/${repeatCount.value})`;
+            
+            // 更新进度
+            const totalRepeats = parseInt(repeatCount.value);
+            const current = currentWordIndex * totalRepeats + currentRepeat;
+            const total = words.length * totalRepeats;
+            const percent = Math.round((current / total) * 100);
+            
+            currentStep.textContent = current + 1;
+            progressPercent.textContent = `${percent}%`;
+            progressBar.style.width = `${percent}%`;
+            
+            // 朗读单词
+            speakWord(word);
+            
+            currentRepeat++;
+            if (currentRepeat >= totalRepeats) {
+                currentRepeat = 0;
+                currentWordIndex++;
+            }
+            
+            const intervalMs = parseInt(interval.value) * 1000;
+            timer = setTimeout(playNextWord, intervalMs);
+        }
+        
+        // 暂停听写
+        function pauseDictation() {
+            if (isPaused) {
+                isPaused = false;
+                pauseBtn.textContent = '暂停';
+                playNextWord();
+            } else {
+                isPaused = true;
+                clearTimeout(timer);
+                speechSynthesis.cancel();
+                pauseBtn.textContent = '继续';
+            }
+        }
+        
+        // 停止听写
+        function stopDictation() {
+            // 移除遮挡类
+            document.body.classList.remove('dictation-active');
+            
+            isPlaying = false;
+            isPaused = false;
+            clearTimeout(timer);
+            speechSynthesis.cancel();
+            
+            // 重置UI
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = true;
+            wordInput.disabled = false;
+            previewBtn.disabled = false;
+            pauseBtn.textContent = '暂停';
+            
+            currentWord.textContent = '已停止';
+        }
+        
+        // 完成听写
+        function finishDictation() {
+            // 移除遮挡类
+            document.body.classList.remove('dictation-active');
+            
+            isPlaying = false;
+            clearTimeout(timer);
+            
+            // 重置UI
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = true;
+            wordInput.disabled = false;
+            previewBtn.disabled = false;
+            
+            currentWord.innerHTML = '<span style="color:#38a169">听写完成！</span>';
+            progressBar.style.width = '100%';
+            progressPercent.textContent = '100%';
+            currentStep.textContent = totalSteps.textContent;
+            
+            // 显示结果
+            resultContent.innerHTML = words.map(word => `<div>${word}</div>`).join('');
+            resultArea.style.display = 'block';
+            
+            // 播放完成提示音
+            const utterance = new SpeechSynthesisUtterance("听写练习已完成");
+            utterance.rate = 0.8;
+            speechSynthesis.speak(utterance);
+        }
+        
+        // 事件监听
+        previewBtn.addEventListener('click', previewSpeech);
+        startBtn.addEventListener('click', startDictation);
+        pauseBtn.addEventListener('click', pauseDictation);
+        stopBtn.addEventListener('click', stopDictation);
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', initSpeech);
+    </script>
+</body>
+</html>
