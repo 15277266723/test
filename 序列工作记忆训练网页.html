@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>序列工作记忆训练</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cbc;
+            --success-color: #5cb85c;
+            --error-color: #d9534f;
+            --background-color: #f5f7fa;
+            --text-color: #333;
+            --card-color: #fff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--card-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            color: #666;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .training-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .task-selector {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .task-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .task-tab.active {
+            border-bottom: 3px solid var(--primary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .task-area {
+            min-height: 300px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .number-sequence {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .number-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--secondary-color);
+            color: white;
+            font-size: 24px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .number-cell.hidden {
+            background-color: #eee;
+            color: transparent;
+        }
+        
+        .number-cell.active {
+            background-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        
+        .grid-container {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .grid-cell {
+            width: 80px;
+            height: 80px;
+            background-color: #eee;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .grid-cell.active {
+            background-color: var(--primary-color);
+        }
+        
+        .grid-cell.user-selected {
+            background-color: var(--success-color);
+        }
+        
+        .grid-cell.error {
+            background-color: var(--error-color);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .feedback {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .feedback.success {
+            background-color: rgba(92, 184, 92, 0.2);
+            color: var(--success-color);
+        }
+        
+        .feedback.error {
+            background-color: rgba(217, 83, 79, 0.2);
+            color: var(--error-color);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: var(--background-color);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .progress-chart {
+            height: 200px;
+            margin-top: 20px;
+        }
+        
+        /* 新增难度设置样式 */
+        .difficulty-panel {
+            background-color: var(--background-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .difficulty-option {
+            margin-bottom: 15px;
+        }
+        
+        .difficulty-option label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .difficulty-slider {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .difficulty-value {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .task-settings {
+            display: none;
+        }
+        
+        .task-settings.active {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>序列工作记忆训练</h1>
+            <p class="description">基于认知科学研究，通过序列记忆任务提升您的工作记忆能力。工作记忆是大脑处理复杂信息的关键认知功能，通过训练可以显著提升。</p>
+        </header>
+        
+        <div class="main-content">
+            <section class="training-section">
+                <div class="task-selector">
+                    <div class="task-tab active" data-task="numbers">数字序列</div>
+                    <div class="task-tab" data-task="grid">空间位置</div>
+                </div>
+                
+                <!-- 数字序列难度设置 -->
+                <div id="numbers-settings" class="task-settings active">
+                    <div class="difficulty-panel">
+                        <h3>数字序列难度设置</h3>
+                        
+                        <div class="difficulty-option">
+                            <label for="sequence-length-slider">序列长度: <span id="sequence-length-value">3</span></label>
+                            <input type="range" id="sequence-length-slider" class="difficulty-slider" 
+                                   min="3" max="9" value="3" step="1">
+                        </div>
+                        
+                        <div class="difficulty-option">
+                            <label for="display-time-slider">数字显示时间(毫秒): <span id="display-time-value">1000</span></label>
+                            <input type="range" id="display-time-slider" class="difficulty-slider" 
+                                   min="300" max="2000" value="1000" step="100">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 空间位置难度设置 -->
+                <div id="grid-settings" class="task-settings">
+                    <div class="difficulty-panel">
+                        <h3>空间位置难度设置</h3>
+                        
+                        <div class="difficulty-option">
+                            <label for="grid-size-slider">网格大小: <span id="grid-size-value">3×3</span></label>
+                            <input type="range" id="grid-size-slider" class="difficulty-slider" 
+                                   min="2" max="5" value="3" step="1">
+                        </div>
+                        
+                        <div class="difficulty-option">
+                            <label for="grid-display-time-slider">格子显示时间(毫秒): <span id="grid-display-time-value">1000</span></label>
+                            <input type="range" id="grid-display-time-slider" class="difficulty-slider" 
+                                   min="300" max="2000" value="1000" step="100">
+                        </div>
+                        
+                        <div class="difficulty-option">
+                            <label for="grid-count-slider">格子数量: <span id="grid-count-value">3</span></label>
+                            <input type="range" id="grid-count-slider" class="difficulty-slider" 
+                                   min="2" max="9" value="3" step="1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task-area">
+                    <!-- 数字序列任务 -->
+                    <div id="numbers-task" class="task-content">
+                        <div class="number-sequence" id="number-sequence">
+                            <!-- 数字序列将在这里动态生成 -->
+                        </div>
+                        <div class="number-input" id="number-input" style="display: none;">
+                            <!-- 数字输入区域将在这里动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 空间位置任务 -->
+                    <div id="grid-task" class="task-content" style="display: none;">
+                        <div class="grid-container" id="grid-container">
+                            <!-- 网格将在这里动态生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button id="start-btn">开始训练</button>
+                        <button id="submit-btn" style="display: none;">提交答案</button>
+                        <button id="next-btn" style="display: none;">下一题</button>
+                    </div>
+                    
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            </section>
+            
+            <section class="stats-section">
+                <h2>训练统计</h2>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="current-level">1</div>
+                        <div class="stat-label">当前级别</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="sequence-length">3</div>
+                        <div class="stat-label">序列长度</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="correct-answers">0</div>
+                        <div class="stat-label">正确回答</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-answers">0</div>
+                        <div class="stat-label">总尝试次数</div>
+                    </div>
+                </div>
+                
+                <div class="progress-chart">
+                    <canvas id="progress-chart"></canvas>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        const gameState = {
+            currentTask: 'numbers',
+            level: 1,
+            sequenceLength: 3,
+            displayTime: 1000,
+            gridSize: 3,
+            gridDisplayTime: 1000,
+            gridCount: 3,
+            currentSequence: [],
+            userSequence: [],
+            isShowingSequence: false,
+            isUserTurn: false,
+            correctAnswers: 0,
+            totalAnswers: 0,
+            progressData: [],
+            timer: null
+        };
+
+        // DOM 元素
+        const elements = {
+            numberSequence: document.getElementById('number-sequence'),
+            numberInput: document.getElementById('number-input'),
+            gridContainer: document.getElementById('grid-container'),
+            startBtn: document.getElementById('start-btn'),
+            submitBtn: document.getElementById('submit-btn'),
+            nextBtn: document.getElementById('next-btn'),
+            feedback: document.getElementById('feedback'),
+            currentLevel: document.getElementById('current-level'),
+            sequenceLength: document.getElementById('sequence-length'),
+            correctAnswers: document.getElementById('correct-answers'),
+            totalAnswers: document.getElementById('total-answers'),
+            progressChart: document.getElementById('progress-chart'),
+            // 难度相关元素
+            numberSettings: document.getElementById('numbers-settings'),
+            gridSettings: document.getElementById('grid-settings'),
+            sequenceLengthSlider: document.getElementById('sequence-length-slider'),
+            sequenceLengthValue: document.getElementById('sequence-length-value'),
+            displayTimeSlider: document.getElementById('display-time-slider'),
+            displayTimeValue: document.getElementById('display-time-value'),
+            gridSizeSlider: document.getElementById('grid-size-slider'),
+            gridSizeValue: document.getElementById('grid-size-value'),
+            gridDisplayTimeSlider: document.getElementById('grid-display-time-slider'),
+            gridDisplayTimeValue: document.getElementById('grid-display-time-value'),
+            gridCountSlider: document.getElementById('grid-count-slider'),
+            gridCountValue: document.getElementById('grid-count-value')
+        };
+
+        // 难度设置事件监听
+        elements.sequenceLengthSlider.addEventListener('input', function() {
+            gameState.sequenceLength = parseInt(this.value);
+            elements.sequenceLengthValue.textContent = gameState.sequenceLength;
+            elements.sequenceLength.textContent = gameState.sequenceLength;
+        });
+
+        elements.displayTimeSlider.addEventListener('input', function() {
+            gameState.displayTime = parseInt(this.value);
+            elements.displayTimeValue.textContent = gameState.displayTime;
+        });
+
+        elements.gridSizeSlider.addEventListener('input', function() {
+            gameState.gridSize = parseInt(this.value);
+            elements.gridSizeValue.textContent = `${gameState.gridSize}×${gameState.gridSize}`;
+        });
+
+        elements.gridDisplayTimeSlider.addEventListener('input', function() {
+            gameState.gridDisplayTime = parseInt(this.value);
+            elements.gridDisplayTimeValue.textContent = gameState.gridDisplayTime;
+        });
+
+        elements.gridCountSlider.addEventListener('input', function() {
+            gameState.gridCount = parseInt(this.value);
+            elements.gridCountValue.textContent = gameState.gridCount;
+        });
+
+        // 任务标签切换
+        document.querySelectorAll('.task-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 更新活动标签
+                document.querySelectorAll('.task-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 显示对应的任务内容
+                document.querySelectorAll('.task-content').forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                const taskType = this.getAttribute('data-task');
+                document.getElementById(`${taskType}-task`).style.display = 'block';
+                
+                // 更新游戏状态
+                gameState.currentTask = taskType;
+                resetGameState();
+                
+                // 根据任务类型显示/隐藏难度设置
+                document.querySelectorAll('.task-settings').forEach(settings => {
+                    settings.classList.remove('active');
+                });
+                
+                if (taskType === 'numbers') {
+                    elements.numberSettings.classList.add('active');
+                } else {
+                    elements.gridSettings.classList.add('active');
+                }
+                
+                // 显示提示
+                elements.feedback.textContent = `已切换到${taskType === 'numbers' ? '数字序列' : '空间位置'}任务，点击"开始训练"开始`;
+                elements.feedback.className = 'feedback';
+            });
+        });
+
+        // 开始训练按钮
+        elements.startBtn.addEventListener('click', startTraining);
+
+        // 提交答案按钮
+        elements.submitBtn.addEventListener('click', checkAnswer);
+
+        // 下一题按钮
+        elements.nextBtn.addEventListener('click', startTraining);
+
+        // 初始化网格
+        function initializeGrid() {
+            elements.gridContainer.innerHTML = '';
+            
+            // 设置网格布局
+            elements.gridContainer.style.gridTemplateColumns = `repeat(${gameState.gridSize}, 1fr)`;
+            
+            // 创建网格单元格
+            const totalCells = gameState.gridSize * gameState.gridSize;
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.setAttribute('data-index', i);
+                cell.addEventListener('click', handleGridClick);
+                elements.gridContainer.appendChild(cell);
+            }
+        }
+
+        // 处理网格点击
+        function handleGridClick(event) {
+            if (!gameState.isUserTurn) {
+                elements.feedback.textContent = '请等待序列显示完成后再点击';
+                elements.feedback.className = 'feedback error';
+                return;
+            }
+            
+            const index = parseInt(event.target.getAttribute('data-index'));
+            
+            // 检查是否已经选择过这个位置
+            if (gameState.userSequence.includes(index)) {
+                elements.feedback.textContent = '此位置已选择，请选择其他位置';
+                elements.feedback.className = 'feedback error';
+                return;
+            }
+            
+            // 添加到用户序列
+            gameState.userSequence.push(index);
+            event.target.classList.add('user-selected');
+            
+            // 检查是否完成输入
+            if (gameState.userSequence.length === gameState.gridCount) {
+                elements.submitBtn.disabled = false;
+                elements.feedback.textContent = '已选择所有位置，请点击"提交答案"';
+                elements.feedback.className = 'feedback';
+            } else {
+                elements.feedback.textContent = `已选择 ${gameState.userSequence.length}/${gameState.gridCount} 个位置`;
+                elements.feedback.className = 'feedback';
+            }
+        }
+
+        // 开始训练
+        function startTraining() {
+            if (gameState.isShowingSequence) {
+                elements.feedback.textContent = '请等待序列显示完成';
+                elements.feedback.className = 'feedback error';
+                return;
+            }
+            
+            resetUI();
+            generateSequence();
+            showSequence();
+        }
+
+        // 生成序列
+        function generateSequence() {
+            gameState.currentSequence = [];
+            gameState.userSequence = [];
+            
+            if (gameState.currentTask === 'numbers') {
+                // 生成数字序列
+                for (let i = 0; i < gameState.sequenceLength; i++) {
+                    gameState.currentSequence.push(Math.floor(Math.random() * 9) + 1);
+                }
+                
+                // 显示数字序列
+                elements.numberSequence.innerHTML = '';
+                gameState.currentSequence.forEach(num => {
+                    const cell = document.createElement('div');
+                    cell.className = 'number-cell hidden';
+                    cell.textContent = num;
+                    elements.numberSequence.appendChild(cell);
+                });
+            } else {
+                // 生成空间位置序列
+                const totalCells = gameState.gridSize * gameState.gridSize;
+                const availablePositions = Array.from({length: totalCells}, (_, i) => i);
+                
+                for (let i = 0; i < gameState.gridCount; i++) {
+                    const randomIndex = Math.floor(Math.random() * availablePositions.length);
+                    gameState.currentSequence.push(availablePositions[randomIndex]);
+                    availablePositions.splice(randomIndex, 1);
+                }
+                
+                // 重置网格
+                initializeGrid();
+            }
+        }
+
+        // 显示序列
+        function showSequence() {
+            gameState.isShowingSequence = true;
+            gameState.isUserTurn = false;
+            elements.startBtn.disabled = true;
+            elements.startBtn.style.display = 'none';
+            elements.submitBtn.style.display = 'none';
+            elements.nextBtn.style.display = 'none';
+            elements.feedback.textContent = '请仔细观察序列...';
+            elements.feedback.className = 'feedback';
+            
+            if (gameState.currentTask === 'numbers') {
+                showNumberSequence();
+            } else {
+                showGridSequence();
+            }
+        }
+
+        // 显示数字序列
+        function showNumberSequence() {
+            const cells = elements.numberSequence.querySelectorAll('.number-cell');
+            let index = 0;
+            
+            // 清除之前的定时器
+            if (gameState.timer) {
+                clearTimeout(gameState.timer);
+            }
+            
+            function showNextNumber() {
+                if (index > 0) {
+                    cells[index - 1].classList.remove('active');
+                    cells[index - 1].classList.add('hidden');
+                }
+                
+                if (index < cells.length) {
+                    cells[index].classList.remove('hidden');
+                    cells[index].classList.add('active');
+                    index++;
+                    gameState.timer = setTimeout(showNextNumber, gameState.displayTime);
+                } else {
+                    // 序列显示完成
+                    setTimeout(() => {
+                        if (cells.length > 0) {
+                            cells[cells.length - 1].classList.remove('active');
+                            cells[cells.length - 1].classList.add('hidden');
+                        }
+                        startUserInput();
+                    }, gameState.displayTime);
+                }
+            }
+            
+            showNextNumber();
+        }
+
+        // 显示网格序列
+        function showGridSequence() {
+            const cells = elements.gridContainer.querySelectorAll('.grid-cell');
+            let index = 0;
+            
+            // 清除之前的定时器
+            if (gameState.timer) {
+                clearTimeout(gameState.timer);
+            }
+            
+            function showNextPosition() {
+                if (index > 0) {
+                    cells[gameState.currentSequence[index - 1]].classList.remove('active');
+                }
+                
+                if (index < gameState.currentSequence.length) {
+                    cells[gameState.currentSequence[index]].classList.add('active');
+                    index++;
+                    gameState.timer = setTimeout(showNextPosition, gameState.gridDisplayTime);
+                } else {
+                    // 序列显示完成
+                    setTimeout(() => {
+                        if (gameState.currentSequence.length > 0) {
+                            cells[gameState.currentSequence[gameState.currentSequence.length - 1]].classList.remove('active');
+                        }
+                        startUserInput();
+                    }, gameState.gridDisplayTime);
+                }
+            }
+            
+            showNextPosition();
+        }
+
+        // 开始用户输入
+        function startUserInput() {
+            gameState.isShowingSequence = false;
+            gameState.isUserTurn = true;
+            
+            elements.feedback.textContent = '请重现序列';
+            elements.feedback.className = 'feedback';
+            
+            if (gameState.currentTask === 'numbers') {
+                // 创建数字输入区域
+                elements.numberInput.style.display = 'block';
+                elements.numberInput.innerHTML = '';
+                
+                // 添加说明
+                const instruction = document.createElement('p');
+                instruction.textContent = '点击数字以重现序列：';
+                instruction.style.marginBottom = '10px';
+                instruction.style.color = '#666';
+                elements.numberInput.appendChild(instruction);
+                
+                // 创建数字按钮
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.display = 'flex';
+                buttonContainer.style.gap = '5px';
+                buttonContainer.style.flexWrap = 'wrap';
+                buttonContainer.style.justifyContent = 'center';
+                buttonContainer.style.maxWidth = '300px';
+                
+                for (let i = 1; i <= 9; i++) {
+                    const button = document.createElement('button');
+                    button.textContent = i;
+                    button.style.padding = '8px 12px';
+                    button.style.fontSize = '16px';
+                    button.style.minWidth = '40px';
+                    
+                    button.addEventListener('click', () => {
+                        if (!gameState.isUserTurn) {
+                            elements.feedback.textContent = '请等待序列显示完成';
+                            elements.feedback.className = 'feedback error';
+                            return;
+                        }
+                        
+                        // 检查是否已输入足够的数字
+                        if (gameState.userSequence.length >= gameState.sequenceLength) {
+                            elements.feedback.textContent = '已输入足够的数字，请点击"提交答案"';
+                            elements.feedback.className = 'feedback error';
+                            return;
+                        }
+                        
+                        // 添加到用户序列
+                        gameState.userSequence.push(i);
+                        
+                        // 显示用户输入
+                        const userCell = document.createElement('div');
+                        userCell.className = 'number-cell';
+                        userCell.textContent = i;
+                        userCell.style.margin = '2px';
+                        elements.numberInput.appendChild(userCell);
+                        
+                        // 检查是否完成输入
+                        if (gameState.userSequence.length === gameState.sequenceLength) {
+                            elements.submitBtn.disabled = false;
+                            elements.feedback.textContent = '已输入所有数字，请点击"提交答案"';
+                            elements.feedback.className = 'feedback';
+                        } else {
+                            elements.feedback.textContent = `已输入 ${gameState.userSequence.length}/${gameState.sequenceLength} 个数字`;
+                            elements.feedback.className = 'feedback';
+                        }
+                    });
+                    
+                    buttonContainer.appendChild(button);
+                }
+                
+                elements.numberInput.appendChild(buttonContainer);
+            }
+            
+            elements.submitBtn.style.display = 'inline-block';
+            elements.submitBtn.disabled = true;
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            if (!gameState.isUserTurn) {
+                return;
+            }
+            
+            gameState.isUserTurn = false;
+            gameState.totalAnswers++;
+            
+            // 检查序列是否匹配
+            const isCorrect = JSON.stringify(gameState.userSequence) === JSON.stringify(gameState.currentSequence);
+            
+            if (isCorrect) {
+                gameState.correctAnswers++;
+                elements.feedback.textContent = '正确！序列匹配。';
+                elements.feedback.className = 'feedback success';
+                
+                // 增加难度
+                if (gameState.correctAnswers % 3 === 0 && gameState.gridCount < 9) {
+                    gameState.level++;
+                    gameState.gridCount = Math.min(gameState.gridCount + 1, 9);
+                    elements.gridCountValue.textContent = gameState.gridCount;
+                    updateStats();
+                }
+            } else {
+                elements.feedback.textContent = `错误！正确序列是：${gameState.currentSequence.join(', ')}`;
+                elements.feedback.className = 'feedback error';
+                
+                // 降低难度（但不要低于最小值）
+                if (gameState.gridCount > 2) {
+                    gameState.gridCount = Math.max(gameState.gridCount - 1, 2);
+                    elements.gridCountValue.textContent = gameState.gridCount;
+                    updateStats();
+                }
+            }
+            
+            // 记录进度
+            gameState.progressData.push({
+                level: gameState.level,
+                sequenceLength: gameState.sequenceLength,
+                gridCount: gameState.gridCount,
+                isCorrect: isCorrect,
+                timestamp: new Date().toISOString()
+            });
+            
+            // 更新UI
+            elements.submitBtn.style.display = 'none';
+            elements.nextBtn.style.display = 'inline-block';
+            updateStats();
+            updateProgressChart();
+        }
+
+        // 重置游戏状态
+        function resetGameState() {
+            // 清除定时器
+            if (gameState.timer) {
+                clearTimeout(gameState.timer);
+            }
+            
+            gameState.currentSequence = [];
+            gameState.userSequence = [];
+            gameState.isShowingSequence = false;
+            gameState.isUserTurn = false;
+            resetUI();
+        }
+
+        // 重置UI
+        function resetUI() {
+            elements.numberSequence.innerHTML = '';
+            elements.numberInput.innerHTML = '';
+            elements.numberInput.style.display = 'none';
+            elements.feedback.textContent = '';
+            elements.feedback.className = 'feedback';
+            elements.submitBtn.style.display = 'none';
+            elements.nextBtn.style.display = 'none';
+            elements.startBtn.disabled = false;
+            elements.startBtn.style.display = 'inline-block';
+            
+            // 重置网格
+            if (gameState.currentTask === 'grid') {
+                initializeGrid();
+            }
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            elements.currentLevel.textContent = gameState.level;
+            elements.sequenceLength.textContent = gameState.sequenceLength;
+            elements.correctAnswers.textContent = gameState.correctAnswers;
+            elements.totalAnswers.textContent = gameState.totalAnswers;
+        }
+
+        // 更新进度图表
+        function updateProgressChart() {
+            const ctx = elements.progressChart.getContext('2d');
+            
+            // 设置Canvas尺寸
+            elements.progressChart.width = elements.progressChart.offsetWidth;
+            elements.progressChart.height = elements.progressChart.offsetHeight;
+            
+            // 清除画布
+            ctx.clearRect(0, 0, elements.progressChart.width, elements.progressChart.height);
+            
+            // 绘制坐标轴
+            ctx.beginPath();
+            ctx.moveTo(50, 30);
+            ctx.lineTo(50, elements.progressChart.height - 20);
+            ctx.lineTo(elements.progressChart.width - 20, elements.progressChart.height - 20);
+            ctx.strokeStyle = '#ccc';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // 绘制数据点
+            if (gameState.progressData.length > 0) {
+                const dataPoints = gameState.progressData.map((d, i) => ({
+                    x: 50 + (i / Math.max(1, gameState.progressData.length - 1)) * (elements.progressChart.width - 70),
+                    y: (elements.progressChart.height - 20) - (d.level / 10) * (elements.progressChart.height - 50)
+                }));
+                
+                // 绘制连线
+                if (dataPoints.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(dataPoints[0].x, dataPoints[0].y);
+                    for (let i = 1; i < dataPoints.length; i++) {
+                        ctx.lineTo(dataPoints[i].x, dataPoints[i].y);
+                    }
+                    ctx.strokeStyle = '#4a6fa5';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+                
+                // 绘制数据点
+                dataPoints.forEach(point => {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#4a6fa5';
+                    ctx.fill();
+                });
+                
+                // 添加Y轴标签
+                ctx.fillStyle = '#666';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('级别', 40, 20);
+                
+                // 添加X轴标签
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText('训练次数', elements.progressChart.width / 2, elements.progressChart.height - 10);
+            } else {
+                // 如果没有数据，显示提示
+                ctx.fillStyle = '#999';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('暂无训练数据', elements.progressChart.width / 2, elements.progressChart.height / 2);
+            }
+        }
+
+        // 初始化
+        function init() {
+            initializeGrid();
+            updateStats();
+            updateProgressChart();
+            
+            // 显示初始提示
+            elements.feedback.textContent = '请选择任务类型，然后点击"开始训练"';
+            elements.feedback.className = 'feedback';
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('load', init);
+        window.addEventListener('resize', updateProgressChart);
+    </script>
+</body>
+</html>
