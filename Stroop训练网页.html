@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stroop认知训练 - 评分版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            padding: 25px;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+        }
+        
+        #instructions {
+            text-align: center;
+        }
+        
+        #settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .setting-group {
+            margin-bottom: 15px;
+        }
+        
+        .setting-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .setting-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .setting-option {
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            border: 1px solid #dee2e6;
+        }
+        
+        .setting-option.selected {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        #training-area {
+            text-align: center;
+            display: none;
+        }
+        
+        #stimulus-container {
+            margin: 30px 0;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #stimulus {
+            font-size: 4.5rem;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin: 25px 0;
+        }
+        
+        .color-btn {
+            padding: 15px 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+        
+        .color-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+        
+        .color-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* 颜色按钮的底色样式 */
+        .color-btn.with-bg {
+            background: linear-gradient(135deg, var(--color-start) 0%, var(--color-end) 100%);
+        }
+        
+        .color-btn.without-bg {
+            background: #6c757d;
+        }
+        
+        #red-btn { --color-start: #e74c3c; --color-end: #c0392b; }
+        #green-btn { --color-start: #2ecc71; --color-end: #27ae60; }
+        #blue-btn { --color-start: #3498db; --color-end: #2980b9; }
+        #yellow-btn { --color-start: #f1c40f; --color-end: #f39c12; }
+        #purple-btn { --color-start: #9b59b6; --color-end: #8e44ad; }
+        #orange-btn { --color-start: #e67e22; --color-end: #d35400; }
+        #pink-btn { --color-start: #e84393; --color-end: #fd79a8; }
+        #cyan-btn { --color-start: #00cec9; --color-end: #00b894; }
+        
+        #results {
+            display: none;
+        }
+        
+        .score-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .score-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .score-label {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border: 1px solid #eaeaea;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            font-weight: 600;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            font-size: 1.3rem;
+            padding: 16px 45px;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-start:hover {
+            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
+        }
+        
+        #timer {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #2c3e50;
+        }
+        
+        #progress {
+            margin: 15px 0;
+            font-size: 1.1rem;
+            color: #7f8c8d;
+        }
+        
+        .performance-feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .excellent { background: #d5f5e3; color: #27ae60; border-left: 5px solid #2ecc71; }
+        .good { background: #d6eaf8; color: #2980b9; border-left: 5px solid #3498db; }
+        .average { background: #fcf3cf; color: #f39c12; border-left: 5px solid #f1c40f; }
+        .poor { background: #fadbd8; color: #c0392b; border-left: 5px solid #e74c3c; }
+        
+        .scoring-info {
+            background: #fff9e6;
+            border-left: 5px solid #f1c40f;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Stroop认知训练</h1>
+            <p class="subtitle">专业评分系统 · 科学认知评估</p>
+        </header>
+        
+        <section id="instructions" class="card">
+            <h2>训练说明</h2>
+            <p>在Stroop训练中，您需要忽略文字的含义，快速准确地选择文字的<strong>字体颜色</strong>。</p>
+            <p>例如：当看到<span style="color: blue; font-weight: bold">蓝色</span>的"红"字时，应该选择"蓝色"按钮。</p>
+            
+            <div id="settings">
+                <div class="setting-group">
+                    <label>难度级别</label>
+                    <div class="setting-options">
+                        <div class="setting-option selected" data-level="easy">简单 (4色)</div>
+                        <div class="setting-option" data-level="medium">中等 (6色)</div>
+                        <div class="setting-option" data-level="hard">困难 (8色)</div>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label>训练时长</label>
+                    <div class="setting-options">
+                        <div class="setting-option selected" data-trials="20">20次</div>
+                        <div class="setting-option" data-trials="30">30次</div>
+                        <div class="setting-option" data-trials="50">50次</div>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label>评分标准</label>
+                    <div class="setting-options">
+                        <div class="setting-option selected" data-scoring="standard">标准评分</div>
+                        <div class="setting-option" data-scoring="strict">严格评分</div>
+                    </div>
+                </div>
+                
+                <!-- 新增：是否显示按钮底色选项 -->
+                <div class="setting-group">
+                    <label>按钮底色</label>
+                    <div class="setting-options">
+                        <div class="setting-option selected" data-bg="show">显示底色</div>
+                        <div class="setting-option" data-bg="hide">隐藏底色</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scoring-info">
+                <strong>评分说明：</strong> 评分基于反应时间和准确率计算。标准评分：反应时间权重60%，准确率权重40%。严格评分：反应时间权重40%，准确率权重60%。
+            </div>
+            
+            <div style="margin: 25px 0;">
+                <button id="start-btn" class="btn btn-start">开始训练</button>
+            </div>
+        </section>
+        
+        <section id="training-area" class="card">
+            <div id="timer">时间: <span id="time">0.0</span>秒</div>
+            <div id="progress">进度: <span id="current-trial">0</span>/<span id="total-trials">20</span></div>
+            
+            <div id="stimulus-container">
+                <div id="stimulus">准备开始</div>
+            </div>
+            
+            <div class="controls">
+                <button id="red-btn" class="color-btn">红</button>
+                <button id="green-btn" class="color-btn">绿</button>
+                <button id="blue-btn" class="color-btn">蓝</button>
+                <button id="yellow-btn" class="color-btn">黄</button>
+                <button id="purple-btn" class="color-btn" style="display:none">紫</button>
+                <button id="orange-btn" class="color-btn" style="display:none">橙</button>
+                <button id="pink-btn" class="color-btn" style="display:none">粉</button>
+                <button id="cyan-btn" class="color-btn" style="display:none">青</button>
+            </div>
+        </section>
+        
+        <section id="results" class="card">
+            <h2 style="text-align: center;">训练结果</h2>
+            
+            <div class="score-display">
+                <div class="score-value" id="total-score">0</div>
+                <div class="score-label">总分</div>
+            </div>
+            
+            <div id="performance-feedback" class="performance-feedback excellent">
+                表现优异！您的认知控制能力很强。
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avg-time">0ms</div>
+                    <div class="stat-label">平均反应时间</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="total-time">0s</div>
+                    <div class="stat-label">总耗时</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="errors">0</div>
+                    <div class="stat-label">错误次数</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="restart-btn" class="btn">重新训练</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // 训练配置
+        const config = {
+            colors: {
+                red: "#e74c3c",
+                green: "#2ecc71", 
+                blue: "#3498db",
+                yellow: "#f1c40f",
+                purple: "#9b59b6",
+                orange: "#e67e22",
+                pink: "#e84393",
+                cyan: "#00cec9"
+            },
+            colorNames: ["红", "绿", "蓝", "黄", "紫", "橙", "粉", "青"],
+            keyMap: {
+                'r': 'red',
+                'g': 'green', 
+                'b': 'blue',
+                'y': 'yellow',
+                'p': 'purple',
+                'o': 'orange',
+                'k': 'pink',
+                'c': 'cyan'
+            },
+            // 评分标准参考：基于心理学研究的Stroop测试常模数据
+            scoringStandards: {
+                standard: {
+                    timeWeight: 0.6,
+                    accuracyWeight: 0.4,
+                    maxScore: 100
+                },
+                strict: {
+                    timeWeight: 0.4,
+                    accuracyWeight: 0.6,
+                    maxScore: 100
+                }
+            },
+            // 反应时间评分基准（毫秒）
+            timeBenchmarks: {
+                excellent: 800,
+                good: 1200,
+                average: 1600,
+                poor: 2000
+            },
+            // 准确率评分基准
+            accuracyBenchmarks: {
+                excellent: 95,
+                good: 85,
+                average: 75,
+                poor: 60
+            }
+        };
+        
+        // 训练状态
+        let state = {
+            currentTrial: 0,
+            startTime: 0,
+            currentStimulus: null,
+            results: [],
+            trainingStarted: false,
+            timerInterval: null,
+            settings: {
+                level: 'easy',
+                trials: 20,
+                scoring: 'standard',
+                showButtonBg: true  // 新增：默认显示按钮底色
+            }
+        };
+        
+        // DOM 元素
+        const elements = {
+            instructions: document.getElementById('instructions'),
+            trainingArea: document.getElementById('training-area'),
+            results: document.getElementById('results'),
+            stimulus: document.getElementById('stimulus'),
+            startBtn: document.getElementById('start-btn'),
+            restartBtn: document.getElementById('restart-btn'),
+            colorBtns: {
+                red: document.getElementById('red-btn'),
+                green: document.getElementById('green-btn'),
+                blue: document.getElementById('blue-btn'),
+                yellow: document.getElementById('yellow-btn'),
+                purple: document.getElementById('purple-btn'),
+                orange: document.getElementById('orange-btn'),
+                pink: document.getElementById('pink-btn'),
+                cyan: document.getElementById('cyan-btn')
+            },
+            timer: document.getElementById('time'),
+            currentTrialEl: document.getElementById('current-trial'),
+            totalTrialsEl: document.getElementById('total-trials'),
+            accuracy: document.getElementById('accuracy'),
+            avgTime: document.getElementById('avg-time'),
+            totalTime: document.getElementById('total-time'),
+            errors: document.getElementById('errors'),
+            totalScore: document.getElementById('total-score'),
+            performanceFeedback: document.getElementById('performance-feedback'),
+            settingOptions: document.querySelectorAll('.setting-option')
+        };
+        
+        // 初始化事件监听
+        function initEventListeners() {
+            elements.startBtn.addEventListener('click', startTraining);
+            elements.restartBtn.addEventListener('click', restartTraining);
+            
+            // 设置选项点击事件
+            elements.settingOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const group = this.parentElement;
+                    group.querySelectorAll('.setting-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    
+                    // 更新设置
+                    if (this.dataset.level) {
+                        state.settings.level = this.dataset.level;
+                    } else if (this.dataset.trials) {
+                        state.settings.trials = parseInt(this.dataset.trials);
+                    } else if (this.dataset.scoring) {
+                        state.settings.scoring = this.dataset.scoring;
+                    } else if (this.dataset.bg) {  // 新增：处理按钮底色选项
+                        state.settings.showButtonBg = this.dataset.bg === 'show';
+                        updateButtonBackgrounds();
+                    }
+                });
+            });
+            
+            // 颜色按钮事件
+            Object.keys(elements.colorBtns).forEach(color => {
+                elements.colorBtns[color].addEventListener('click', () => {
+                    handleResponse(color);
+                });
+            });
+            
+            // 键盘快捷键支持
+            document.addEventListener('keydown', (e) => {
+                if (!state.trainingStarted) return;
+                
+                if (config.keyMap[e.key]) {
+                    handleResponse(config.keyMap[e.key]);
+                }
+            });
+        }
+        
+        // 更新按钮背景样式
+        function updateButtonBackgrounds() {
+            Object.keys(elements.colorBtns).forEach(color => {
+                const btn = elements.colorBtns[color];
+                if (state.settings.showButtonBg) {
+                    btn.classList.remove('without-bg');
+                    btn.classList.add('with-bg');
+                } else {
+                    btn.classList.remove('with-bg');
+                    btn.classList.add('without-bg');
+                }
+            });
+        }
+        
+        // 开始训练
+        function startTraining() {
+            state.trainingStarted = true;
+            elements.instructions.style.display = 'none';
+            elements.trainingArea.style.display = 'block';
+            elements.results.style.display = 'none';
+            
+            // 根据设置显示相应的颜色按钮
+            updateColorButtons();
+            
+            // 更新按钮背景样式
+            updateButtonBackgrounds();
+            
+            // 更新总trials数
+            elements.totalTrialsEl.textContent = state.settings.trials;
+            
+            // 开始计时
+            state.startTime = Date.now();
+            updateTimer();
+            state.timerInterval = setInterval(updateTimer, 100);
+            
+            // 重置状态
+            state.currentTrial = 0;
+            state.results = [];
+            
+            // 开始第一个trial
+            nextTrial();
+        }
+        
+        // 更新颜色按钮显示
+        function updateColorButtons() {
+            const levels = {
+                easy: ['red', 'green', 'blue', 'yellow'],
+                medium: ['red', 'green', 'blue', 'yellow', 'purple', 'orange'],
+                hard: ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'cyan']
+            };
+            
+            // 先隐藏所有按钮
+            Object.keys(elements.colorBtns).forEach(color => {
+                elements.colorBtns[color].style.display = 'none';
+            });
+            
+            // 显示当前难度对应的按钮
+            levels[state.settings.level].forEach(color => {
+                elements.colorBtns[color].style.display = 'block';
+            });
+        }
+        
+        // 更新计时器
+        function updateTimer() {
+            if (!state.trainingStarted) return;
+            
+            const elapsed = (Date.now() - state.startTime) / 1000;
+            elements.timer.textContent = elapsed.toFixed(1);
+        }
+        
+        // 下一个trial
+        function nextTrial() {
+            if (state.currentTrial >= state.settings.trials) {
+                finishTraining();
+                return;
+            }
+            
+            state.currentTrial++;
+            elements.currentTrialEl.textContent = state.currentTrial;
+            
+            // 获取当前可用的颜色
+            const availableColors = getAvailableColors();
+            const availableColorNames = getAvailableColorNames();
+            
+            // 随机生成刺激（确保颜色和文字不一致以产生干扰）
+            const text = availableColorNames[Math.floor(Math.random() * availableColorNames.length)];
+            let color = availableColors[Math.floor(Math.random() * availableColors.length)];
+            
+            // 确保颜色和文字不一致（增加干扰）
+            while (color === text.toLowerCase()) {
+                color = availableColors[Math.floor(Math.random() * availableColors.length)];
+            }
+            
+            state.currentStimulus = { text, color };
+            elements.stimulus.textContent = text;
+            elements.stimulus.style.color = config.colors[color];
+            
+            // 记录trial开始时间
+            state.currentTrialStart = Date.now();
+        }
+        
+        // 获取当前可用的颜色
+        function getAvailableColors() {
+            const levels = {
+                easy: ['red', 'green', 'blue', 'yellow'],
+                medium: ['red', 'green', 'blue', 'yellow', 'purple', 'orange'],
+                hard: ['red', 'green', 'blue', 'yellow', 'purple', 'orange', 'pink', 'cyan']
+            };
+            return levels[state.settings.level];
+        }
+        
+        // 获取当前可用的颜色名称
+        function getAvailableColorNames() {
+            const levels = {
+                easy: ["红", "绿", "蓝", "黄"],
+                medium: ["红", "绿", "蓝", "黄", "紫", "橙"],
+                hard: ["红", "绿", "蓝", "黄", "紫", "橙", "粉", "青"]
+            };
+            return levels[state.settings.level];
+        }
+        
+        // 处理用户响应
+        function handleResponse(selectedColor) {
+            if (!state.trainingStarted || !state.currentStimulus) return;
+            
+            const reactionTime = Date.now() - state.currentTrialStart;
+            const isCorrect = selectedColor === state.currentStimulus.color;
+            
+            // 保存结果
+            state.results.push({
+                trial: state.currentTrial,
+                stimulus: state.currentStimulus,
+                response: selectedColor,
+                reactionTime,
+                correct: isCorrect
+            });
+            
+            // 下一个trial
+            nextTrial();
+        }
+        
+        // 计算分数
+        function calculateScore() {
+            if (state.results.length === 0) return 0;
+            
+            const correctTrials = state.results.filter(r => r.correct).length;
+            const accuracy = (correctTrials / state.settings.trials) * 100;
+            const avgReactionTime = state.results.reduce((sum, r) => sum + r.reactionTime, 0) / state.results.length;
+            
+            // 根据反应时间计算时间分数（反应越快分数越高）
+            let timeScore = 0;
+            if (avgReactionTime <= config.timeBenchmarks.excellent) {
+                timeScore = 100;
+            } else if (avgReactionTime <= config.timeBenchmarks.good) {
+                timeScore = 80 + (20 * (config.timeBenchmarks.good - avgReactionTime) / 
+                    (config.timeBenchmarks.good - config.timeBenchmarks.excellent));
+            } else if (avgReactionTime <= config.timeBenchmarks.average) {
+                timeScore = 60 + (20 * (config.timeBenchmarks.average - avgReactionTime) / 
+                    (config.timeBenchmarks.average - config.timeBenchmarks.good));
+            } else if (avgReactionTime <= config.timeBenchmarks.poor) {
+                timeScore = 40 + (20 * (config.timeBenchmarks.poor - avgReactionTime) / 
+                    (config.timeBenchmarks.poor - config.timeBenchmarks.average));
+            } else {
+                timeScore = 40 * (config.timeBenchmarks.poor / avgReactionTime);
+            }
+            
+            // 根据准确率计算准确率分数
+            let accuracyScore = 0;
+            if (accuracy >= config.accuracyBenchmarks.excellent) {
+                accuracyScore = 100;
+            } else if (accuracy >= config.accuracyBenchmarks.good) {
+                accuracyScore = 80 + (20 * (accuracy - config.accuracyBenchmarks.good) / 
+                    (config.accuracyBenchmarks.excellent - config.accuracyBenchmarks.good));
+            } else if (accuracy >= config.accuracyBenchmarks.average) {
+                accuracyScore = 60 + (20 * (accuracy - config.accuracyBenchmarks.average) / 
+                    (config.accuracyBenchmarks.good - config.accuracyBenchmarks.average));
+            } else if (accuracy >= config.accuracyBenchmarks.poor) {
+                accuracyScore = 40 + (20 * (accuracy - config.accuracyBenchmarks.poor) / 
+                    (config.accuracyBenchmarks.average - config.accuracyBenchmarks.poor));
+            } else {
+                accuracyScore = 40 * (accuracy / config.accuracyBenchmarks.poor);
+            }
+            
+            // 根据选择的评分标准计算总分
+            const scoringConfig = config.scoringStandards[state.settings.scoring];
+            const totalScore = (timeScore * scoringConfig.timeWeight) + 
+                              (accuracyScore * scoringConfig.accuracyWeight);
+            
+            return Math.round(totalScore);
+        }
+        
+        // 获取表现反馈
+        function getPerformanceFeedback(score) {
+            if (score >= 90) {
+                return { text: "表现优异！您的认知控制能力很强。", class: "excellent" };
+            } else if (score >= 75) {
+                return { text: "表现良好！您的执行功能表现不错。", class: "good" };
+            } else if (score >= 60) {
+                return { text: "表现一般！还有提升空间，多练习会更好。", class: "average" };
+            } else {
+                return { text: "需要加强！建议多进行认知训练。", class: "poor" };
+            }
+        }
+        
+        // 完成训练
+        function finishTraining() {
+            state.trainingStarted = false;
+            clearInterval(state.timerInterval);
+            
+            // 计算统计数据
+            const totalTime = (Date.now() - state.startTime) / 1000;
+            const correctTrials = state.results.filter(r => r.correct).length;
+            const accuracy = (correctTrials / state.settings.trials) * 100;
+            const avgReactionTime = state.results.reduce((sum, r) => sum + r.reactionTime, 0) / state.results.length;
+            const errorCount = state.results.filter(r => !r.correct).length;
+            
+            // 计算总分
+            const totalScore = calculateScore();
+            
+            // 获取表现反馈
+            const feedback = getPerformanceFeedback(totalScore);
+            
+            // 显示结果
+            elements.totalScore.textContent = totalScore;
+            elements.accuracy.textContent = `${accuracy.toFixed(1)}%`;
+            elements.avgTime.textContent = `${avgReactionTime.toFixed(0)}ms`;
+            elements.totalTime.textContent = `${totalTime.toFixed(1)}s`;
+            elements.errors.textContent = errorCount;
+            
+            // 更新表现反馈
+            elements.performanceFeedback.textContent = feedback.text;
+            elements.performanceFeedback.className = "performance-feedback " + feedback.class;
+            
+            elements.trainingArea.style.display = 'none';
+            elements.results.style.display = 'block';
+        }
+        
+        // 重新开始训练
+        function restartTraining() {
+            // 重置状态
+            state = {
+                currentTrial: 0,
+                startTime: 0,
+                currentStimulus: null,
+                results: [],
+                trainingStarted: false,
+                timerInterval: null,
+                settings: {
+                    level: 'easy',
+                    trials: 20,
+                    scoring: 'standard',
+                    showButtonBg: true
+                }
+            };
+            
+            // 重置UI
+            document.querySelector('[data-level="easy"]').classList.add('selected');
+            document.querySelector('[data-level="medium"]').classList.remove('selected');
+            document.querySelector('[data-level="hard"]').classList.remove('selected');
+            
+            document.querySelector('[data-trials="20"]').classList.add('selected');
+            document.querySelector('[data-trials="30"]').classList.remove('selected');
+            document.querySelector('[data-trials="50"]').classList.remove('selected');
+            
+            document.querySelector('[data-scoring="standard"]').classList.add('selected');
+            document.querySelector('[data-scoring="strict"]').classList.remove('selected');
+            
+            document.querySelector('[data-bg="show"]').classList.add('selected');
+            document.querySelector('[data-bg="hide"]').classList.remove('selected');
+            
+            // 显示指导页
+            elements.instructions.style.display = 'block';
+            elements.trainingArea.style.display = 'none';
+            elements.results.style.display = 'none';
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initEventListeners();
+        });
+    </script>
+</body>
+</html>

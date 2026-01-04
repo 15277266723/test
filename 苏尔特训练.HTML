@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>苏尔特表训练</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2575fc;
+            margin-bottom: 15px;
+            font-size: 2.2rem;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            background-color: #f0f8ff;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .setting-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2575fc;
+            font-size: 0.9rem;
+        }
+        
+        .setting-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #2575fc;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            background-color: #f0f8ff;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2575fc;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .grid-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            padding: 10px;
+        }
+        
+        #grid {
+            display: grid;
+            gap: 8px;
+            margin: 0 auto;
+            justify-content: center;
+        }
+        
+        .cell {
+            aspect-ratio: 1;
+            background-color: #e6f0ff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            user-select: none;
+            min-width: 50px;
+            min-height: 50px;
+            border: 2px solid transparent;
+        }
+        
+        .cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .cell.incorrect {
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        #startBtn {
+            background-color: #2575fc;
+            color: white;
+        }
+        
+        #resetBtn {
+            background-color: #6a11cb;
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f0f8ff;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result h2 {
+            color: #2575fc;
+            margin-bottom: 15px;
+        }
+        
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .score-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .score-label {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .performance {
+            margin-top: 15px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .settings {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stat-item {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .result-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .color-easy { color: black; }
+        .color-medium-1 { color: #FF6B6B; }
+        .color-medium-2 { color: #4ECDC4; }
+        .color-medium-3 { color: #FFD166; }
+        .color-medium-4 { color: #06D6A0; }
+        .color-medium-5 { color: #118AB2; }
+        .color-medium-6 { color: #073B4C; }
+        .color-hard-1 { color: #FF595E; }
+        .color-hard-2 { color: #FF924C; }
+        .color-hard-3 { color: #FFCA3A; }
+        .color-hard-4 { color: #8AC926; }
+        .color-hard-5 { color: #1982C4; }
+        .color-hard-6 { color: #6A4C93; }
+        .color-random-1 { color: #FF0000; }
+        .color-random-2 { color: #FF7F00; }
+        .color-random-3 { color: #FFFF00; }
+        .color-random-4 { color: #00FF00; }
+        .color-random-5 { color: #0000FF; }
+        .color-random-6 { color: #4B0082; }
+        .color-random-7 { color: #9400D3; }
+        .color-random-8 { color: #FF1493; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>苏尔特表训练</h1>
+        <p class="description">按顺序点击数字，尽可能快速且准确地完成。点击开始按钮开始计时。</p>
+        
+        <div class="settings">
+            <div class="setting-group">
+                <label for="gridSize">格子难度</label>
+                <select id="gridSize">
+                    <option value="5">5×5 (25个数字)</option>
+                    <option value="6">6×6 (36个数字)</option>
+                    <option value="7">7×7 (49个数字)</option>
+                    <option value="8">8×8 (64个数字)</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="colorMode">颜色难度</label>
+                <select id="colorMode">
+                    <option value="easy">简单(单色)</option>
+                    <option value="medium">中等(6种颜色)</option>
+                    <option value="hard">困难(6种对比色)</option>
+                    <option value="random">随机颜色(8种颜色)</option>
+                    <option value="gradient">渐变色(红到蓝)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="timer">00:00.0</div>
+                <div class="stat-label">用时</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="errors">0</div>
+                <div class="stat-label">错误次数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="current">0</div>
+                <div class="stat-label">当前数字</div>
+            </div>
+        </div>
+        
+        <div class="grid-container">
+            <div id="grid"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn">开始训练</button>
+            <button id="resetBtn" disabled>重新开始</button>
+        </div>
+        
+        <div class="result" id="result">
+            <h2>训练完成！</h2>
+            <div class="score-container">
+                <div class="score-label">您的得分</div>
+                <div class="score-value" id="score">100</div>
+                <div class="score-label" id="scoreText">完美表现！</div>
+            </div>
+            <div class="result-stats">
+                <div>
+                    <div class="stat-value" id="finalTime">00:00.0</div>
+                    <div class="stat-label">总用时</div>
+                </div>
+                <div>
+                    <div class="stat-value" id="finalErrors">0</div>
+                    <div class="stat-label">错误次数</div>
+                </div>
+                <div>
+                    <div class="stat-value" id="gridSizeText">5×5</div>
+                    <div class="stat-label">格子难度</div>
+                </div>
+            </div>
+            <p class="performance" id="performance"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const grid = document.getElementById('grid');
+            const startBtn = document.getElementById('startBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const timerDisplay = document.getElementById('timer');
+            const errorsDisplay = document.getElementById('errors');
+            const currentDisplay = document.getElementById('current');
+            const result = document.getElementById('result');
+            const finalTime = document.getElementById('finalTime');
+            const finalErrors = document.getElementById('finalErrors');
+            const performance = document.getElementById('performance');
+            const score = document.getElementById('score');
+            const scoreText = document.getElementById('scoreText');
+            const gridSizeText = document.getElementById('gridSizeText');
+            const gridSizeSelect = document.getElementById('gridSize');
+            const colorModeSelect = document.getElementById('colorMode');
+            
+            // 游戏状态变量
+            let numbers = [];
+            let currentNumber = 1;
+            let errors = 0;
+            let startTime;
+            let timerInterval;
+            let isActive = false;
+            let gridSize = parseInt(gridSizeSelect.value);
+            let colorMode = colorModeSelect.value;
+            let clickedNumbers = new Set(); // 记录已点击的正确数字
+            let randomColorMap = {}; // 随机颜色模式的颜色映射
+            
+            // 不同格子难度的基准时间和分数
+            const difficultySettings = {
+                5: { baseTime: 30, maxScore: 100 },  // 5x5基准时间30秒
+                6: { baseTime: 45, maxScore: 100 },  // 6x6基准时间45秒
+                7: { baseTime: 60, maxScore: 100 },  // 7x7基准时间60秒
+                8: { baseTime: 80, maxScore: 100 }   // 8x8基准时间80秒
+            };
+            
+            // 初始化网格
+            function initializeGrid() {
+                grid.innerHTML = '';
+                
+                // 更新当前格子大小
+                gridSize = parseInt(gridSizeSelect.value);
+                colorMode = colorModeSelect.value;
+                
+                // 计算总格子数
+                const totalCells = gridSize * gridSize;
+                
+                // 生成1到totalCells的数字数组并随机排序
+                numbers = Array.from({length: totalCells}, (_, i) => i + 1);
+                shuffleArray(numbers);
+                
+                // 为随机颜色模式生成颜色映射
+                if (colorMode === 'random') {
+                    generateRandomColorMap(totalCells);
+                }
+                
+                // 设置网格样式
+                grid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+                grid.style.maxWidth = `${gridSize * 60}px`;
+                
+                // 创建网格单元格
+                for (let i = 0; i < totalCells; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = numbers[i];
+                    
+                    // 根据颜色模式设置颜色
+                    applyColorMode(cell, numbers[i]);
+                    
+                    cell.addEventListener('click', () => handleCellClick(cell, numbers[i]));
+                    grid.appendChild(cell);
+                }
+                
+                // 重置游戏状态
+                currentNumber = 1;
+                errors = 0;
+                clickedNumbers.clear();
+                errorsDisplay.textContent = errors;
+                currentDisplay.textContent = currentNumber;
+                timerDisplay.textContent = '00:00.0';
+                result.style.display = 'none';
+                resetBtn.disabled = true;
+                startBtn.disabled = false;
+                isActive = false;
+            }
+            
+            // 为随机颜色模式生成颜色映射
+            function generateRandomColorMap(totalCells) {
+                randomColorMap = {};
+                for (let i = 1; i <= totalCells; i++) {
+                    // 为每个数字分配1-8的随机颜色编号
+                    randomColorMap[i] = Math.floor(Math.random() * 8) + 1;
+                }
+            }
+            
+            // 应用颜色模式
+            function applyColorMode(cell, number) {
+                // 移除所有可能的颜色类
+                cell.classList.remove('color-easy', 
+                    'color-medium-1', 'color-medium-2', 'color-medium-3', 
+                    'color-medium-4', 'color-medium-5', 'color-medium-6',
+                    'color-hard-1', 'color-hard-2', 'color-hard-3',
+                    'color-hard-4', 'color-hard-5', 'color-hard-6',
+                    'color-random-1', 'color-random-2', 'color-random-3',
+                    'color-random-4', 'color-random-5', 'color-random-6',
+                    'color-random-7', 'color-random-8');
+                
+                // 清除渐变色模式可能设置的style
+                cell.style.color = '';
+                
+                switch(colorMode) {
+                    case 'easy':
+                        cell.classList.add('color-easy');
+                        break;
+                    case 'medium':
+                        // 中等难度：6种颜色循环
+                        const colorClassMedium = 'color-medium-' + ((number % 6) + 1);
+                        cell.classList.add(colorClassMedium);
+                        break;
+                    case 'hard':
+                        // 困难难度：6种对比色，但根据数字分布
+                        const colorClassHard = 'color-hard-' + ((Math.floor((number - 1) / Math.ceil((gridSize * gridSize) / 6)) % 6) + 1);
+                        cell.classList.add(colorClassHard);
+                        break;
+                    case 'random':
+                        // 随机颜色模式：使用预生成的随机颜色映射
+                        if (randomColorMap[number]) {
+                            const colorClassRandom = 'color-random-' + randomColorMap[number];
+                            cell.classList.add(colorClassRandom);
+                        }
+                        break;
+                    case 'gradient':
+                        // 渐变色模式：从红色(0°)到蓝色(240°)
+                        const totalCells = gridSize * gridSize;
+                        const hue = ((number - 1) / (totalCells - 1)) * 240; // 0到240
+                        cell.style.color = `hsl(${hue}, 100%, 40%)`;
+                        break;
+                }
+            }
+            
+            // 随机打乱数组（Fisher-Yates洗牌算法）
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+            
+            // 处理单元格点击
+            function handleCellClick(cell, value) {
+                if (!isActive) return;
+                
+                if (value === currentNumber) {
+                    // 点击正确
+                    if (!clickedNumbers.has(value)) {
+                        clickedNumbers.add(value);
+                        currentNumber++;
+                        currentDisplay.textContent = currentNumber;
+                        
+                        // 检查是否完成
+                        if (currentNumber > gridSize * gridSize) {
+                            finishGame();
+                        }
+                    }
+                } else {
+                    // 点击错误
+                    cell.classList.add('incorrect');
+                    errors++;
+                    errorsDisplay.textContent = errors;
+                    
+                    // 移除错误动画类
+                    setTimeout(() => {
+                        cell.classList.remove('incorrect');
+                    }, 500);
+                }
+            }
+            
+            // 开始游戏
+            function startGame() {
+                if (isActive) return;
+                
+                isActive = true;
+                startBtn.disabled = true;
+                resetBtn.disabled = false;
+                startTime = Date.now();
+                
+                // 启动计时器
+                timerInterval = setInterval(updateTimer, 100);
+            }
+            
+            // 更新计时器
+            function updateTimer() {
+                const elapsedTime = Date.now() - startTime;
+                const minutes = Math.floor(elapsedTime / 60000);
+                const seconds = Math.floor((elapsedTime % 60000) / 1000);
+                const milliseconds = Math.floor((elapsedTime % 1000) / 100);
+                
+                timerDisplay.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds}`;
+            }
+            
+            // 计算得分
+            function calculateScore(timeInSeconds) {
+                const settings = difficultySettings[gridSize];
+                const baseTime = settings.baseTime;
+                
+                // 如果时间少于基准时间，得满分
+                if (timeInSeconds <= baseTime) {
+                    return 100;
+                }
+                
+                // 计算扣分：每超过基准时间1秒扣2分
+                const timeOver = timeInSeconds - baseTime;
+                const penalty = Math.min(timeOver * 2, 100);
+                
+                // 计算基础分数
+                let baseScore = 100;
+                
+                // 根据超过基准时间的比例扣分
+                if (timeInSeconds > baseTime) {
+                    const timeRatio = (timeInSeconds - baseTime) / baseTime;
+                    baseScore = Math.max(0, 100 - (timeRatio * 100));
+                }
+                
+                // 考虑错误次数的扣分：每个错误扣5分
+                const errorPenalty = errors * 5;
+                
+                // 最终得分
+                const finalScore = Math.max(0, Math.min(100, baseScore - errorPenalty));
+                
+                return Math.round(finalScore);
+            }
+            
+            // 获取得分评价
+            function getScoreText(scoreValue) {
+                if (scoreValue >= 90) return "完美表现！";
+                if (scoreValue >= 80) return "非常优秀！";
+                if (scoreValue >= 70) return "做得很好！";
+                if (scoreValue >= 60) return "不错的表现！";
+                if (scoreValue >= 50) return "继续努力！";
+                return "多加练习，你会进步的！";
+            }
+            
+            // 获取表现评价
+            function getPerformanceText(scoreValue, timeInSeconds, errors) {
+                const settings = difficultySettings[gridSize];
+                const baseTime = settings.baseTime;
+                
+                if (scoreValue >= 90 && errors === 0) {
+                    return "太棒了！你的注意力和反应速度非常出色！";
+                } else if (scoreValue >= 80 && errors <= 2) {
+                    return "做得很好！继续保持练习会更有进步。";
+                } else if (scoreValue >= 60 && timeInSeconds <= baseTime * 1.5) {
+                    return "不错的表现！多加练习可以提高速度和准确性。";
+                } else if (errors > 5) {
+                    return "准确率需要提高，请放慢速度，减少错误。";
+                } else if (timeInSeconds > baseTime * 2) {
+                    return "速度可以再快一些，但要保持准确性。";
+                } else {
+                    return "继续努力！每天练习几分钟，你会看到明显的进步。";
+                }
+            }
+            
+            // 完成游戏
+            function finishGame() {
+                isActive = false;
+                clearInterval(timerInterval);
+                
+                // 计算总用时（秒）
+                const totalTime = (Date.now() - startTime) / 1000;
+                const minutes = Math.floor(totalTime / 60);
+                const seconds = Math.floor(totalTime % 60);
+                const milliseconds = Math.floor((totalTime * 10) % 10);
+                
+                // 计算得分
+                const scoreValue = calculateScore(totalTime);
+                const scoreTextValue = getScoreText(scoreValue);
+                const performanceText = getPerformanceText(scoreValue, totalTime, errors);
+                
+                // 显示结果
+                result.style.display = 'block';
+                finalTime.textContent = timerDisplay.textContent;
+                finalErrors.textContent = errors;
+                score.textContent = scoreValue;
+                scoreText.textContent = scoreTextValue;
+                gridSizeText.textContent = `${gridSize}×${gridSize}`;
+                performance.textContent = performanceText;
+            }
+            
+            // 重置游戏
+            function resetGame() {
+                clearInterval(timerInterval);
+                initializeGrid();
+            }
+            
+            // 当难度设置改变时重置游戏
+            gridSizeSelect.addEventListener('change', initializeGrid);
+            colorModeSelect.addEventListener('change', initializeGrid);
+            
+            // 事件监听器
+            startBtn.addEventListener('click', startGame);
+            resetBtn.addEventListener('click', resetGame);
+            
+            // 初始化游戏
+            initializeGrid();
+        });
+    </script>
+</body>
+</html>
