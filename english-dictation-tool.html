@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语听写大师</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+        }
+
+        /* 听写区域 */
+        .dictation-area {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .current-word {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 1.5rem 0;
+            min-height: 3rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* 统计信息 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: #f7fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+
+        /* 隐藏元素 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav-buttons {
+                flex-direction: column;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 导航栏 -->
+        <nav class="navbar">
+            <h1><i class="fa fa-graduation-cap"></i> 英语听写大师</h1>
+        </nav>
+
+        <!-- 首页（听写设置） -->
+        <section id="home" class="section">
+            <div class="card">
+                <h2><i class="fa fa-cog"></i> 听写设置</h2>
+
+                <div class="form-group">
+                    <label>听写内容</label>
+                    <textarea class="form-control" id="dictation-content" rows="8" placeholder="请输入要听写的单词，每行一个"></textarea>
+                    <small class="text-gray-500" style="display: block; margin-top: 0.5rem;">示例：
+                        <br>January
+                        <br>February
+                        <br>March
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>每个单词重复次数</label>
+                    <input type="number" class="form-control" id="repeat-count" value="3" min="1" max="10">
+                </div>
+
+                <div class="form-group">
+                    <label>播放间隔(秒)</label>
+                    <input type="number" class="form-control" id="interval" value="5" min="1" max="60">
+                </div>
+
+                <div class="form-group">
+                    <label>乱序播放</label>
+                    <input type="checkbox" id="shuffle-play" checked style="margin-right: 0.5rem;">
+                    <span>打乱单词播放顺序</span>
+                </div>
+
+                <div class="form-group">
+                    <label>语音合成服务</label>
+                    <select class="form-control" id="dictation-tts-service" style="max-width: 300px;">
+                        <option value="web-speech">浏览器内置语音</option>
+                        <option value="youdao" selected>有道词典发音</option>
+                        <option value="baidu">百度翻译发音</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="startDictation()">
+                    <i class="fa fa-play"></i> 开始听写
+                </button>
+            </div>
+        </section>
+
+
+
+
+        <!-- 听写设置 -->
+        <section id="dictation" class="section hidden">
+            <div class="card">
+                <h2><i class="fa fa-cog"></i> 听写设置</h2>
+                
+                <div class="form-group">
+                    <label>听写模式</label>
+                    <div>
+                        <label style="display: inline-block; margin-right: 1rem;">
+                            <input type="radio" name="dictation-mode" value="listen" checked> 听力听写
+                        </label>
+                        <label style="display: inline-block; margin-right: 1rem;">
+                            <input type="radio" name="dictation-mode" value="chinese"> 看中文写英文
+                        </label>
+                        <label style="display: inline-block;">
+                            <input type="radio" name="dictation-mode" value="english"> 看英文写中文
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>听写内容</label>
+                    <textarea class="form-control" id="dictation-content" rows="5" placeholder="请输入要听写的单词，每行一个"></textarea>
+                    <small class="text-gray-500" style="display: block; margin-top: 0.5rem;">示例：
+                        <br>January
+                        <br>February
+                        <br>March
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label>每个单词重复次数</label>
+                    <input type="number" class="form-control" id="repeat-count" value="3" min="1" max="10">
+                </div>
+
+                <div class="form-group">
+                    <label>播放间隔(秒)</label>
+                    <input type="number" class="form-control" id="interval" value="5" min="1" max="60">
+                </div>
+
+                <div class="form-group">
+                    <label>乱序播放</label>
+                    <input type="checkbox" id="shuffle-play" checked style="margin-right: 0.5rem;">
+                    <span>打乱单词播放顺序</span>
+                </div>
+
+                <div class="form-group">
+                    <label>语速</label>
+                    <select class="form-control" id="rate">
+                        <option value="0.8">慢速</option>
+                        <option value="1" selected>正常</option>
+                        <option value="1.2">快速</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>语音合成服务</label>
+                    <select class="form-control" id="dictation-tts-service" style="max-width: 300px;">
+                        <option value="web-speech">浏览器内置语音</option>
+                        <option value="youdao" selected>有道词典发音</option>
+                        <option value="baidu">百度翻译发音</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" onclick="startDictation()">
+                    <i class="fa fa-play"></i> 开始听写
+                </button>
+            </div>
+
+            <!-- 听写过程 -->
+            <div id="dictation-process" class="card hidden">
+                <h2><i class="fa fa-headphones"></i> 听写中</h2>
+                
+                <div class="dictation-area">
+                    <div id="dictation-prompt" style="font-size: 1.2rem; margin-bottom: 1rem;">准备开始</div>
+                    <div id="current-word" class="current-word">---</div>
+                    
+                    <div class="progress-bar" style="margin-top: 1rem;">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span>进度: <span id="current-step">0</span> / <span id="total-steps">0</span></span>
+                        <span id="repeat-status"></span>
+                    </div>
+
+                    <div id="playback-controls" style="margin-top: 1rem;">
+                        <button class="btn btn-warning" id="btn-pause" onclick="togglePause()" style="margin-right: 0.5rem;">
+                            <i class="fa fa-pause"></i> 暂停
+                        </button>
+                        <button class="btn btn-danger" onclick="stopDictation()" style="margin-right: 0.5rem;">
+                            <i class="fa fa-stop"></i> 停止
+                        </button>
+                        <button class="btn btn-info" onclick="playCurrentWord()" style="margin-right: 0.5rem;">
+                            <i class="fa fa-volume-up"></i> 重播当前
+                        </button>
+                    </div>
+
+                    <div id="dictation-input-area" class="form-group" style="margin-top: 1rem;">
+                        <input type="text" class="form-control" id="user-input" placeholder="请输入答案" style="text-align: center; font-size: 1.2rem;">
+                    </div>
+
+                    <div id="answer-controls" style="margin-top: 1rem;">
+                        <button class="btn btn-success" onclick="checkAnswer()">
+                            <i class="fa fa-check"></i> 下一题
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 听写结果 -->
+            <div id="dictation-result" class="card hidden">
+                <h2><i class="fa fa-trophy"></i> 听写结果</h2>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="result-total">0</div>
+                        <div class="stat-label">总题数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #48bb78;" id="result-correct">0</div>
+                        <div class="stat-label">正确</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #f56565;" id="result-wrong">0</div>
+                        <div class="stat-label">错误</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="result-accuracy">0%</div>
+                        <div class="stat-label">正确率</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="restartDictation()">
+                        <i class="fa fa-refresh"></i> 重新听写
+                    </button>
+                </div>
+
+                <!-- 详细结果 -->
+                <div style="margin-top: 2rem;">
+                    <h3>详细结果</h3>
+                    <div class="result-list" id="result-list"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // 本地存储键名
+        const STORAGE_KEYS = {
+            WORDS: 'english_dictation_words',
+            HISTORY: 'english_dictation_history',
+            ERRORS: 'english_dictation_errors'
+        };
+
+        // 全局变量
+        let dictationState = null;
+        let timer = null;
+
+        // 初始化数据
+        function initData() {
+            if (!localStorage.getItem(STORAGE_KEYS.WORDS)) {
+                const defaultWords = [
+                    { id: 1, word: 'apple', phonetic: '/ˈæpl/', chinese: '苹果', level: 'primary' },
+                    { id: 2, word: 'banana', phonetic: '/bəˈnɑːnə/', chinese: '香蕉', level: 'primary' },
+                    { id: 3, word: 'cat', phonetic: '/kæt/', chinese: '猫', level: 'primary' },
+                    { id: 4, word: 'dog', phonetic: '/dɒɡ/', chinese: '狗', level: 'primary' },
+                    { id: 5, word: 'egg', phonetic: '/eɡ/', chinese: '鸡蛋', level: 'primary' },
+                    { id: 6, word: 'fish', phonetic: '/fɪʃ/', chinese: '鱼', level: 'primary' },
+                    { id: 7, word: 'goat', phonetic: '/ɡəʊt/', chinese: '山羊', level: 'primary' },
+                    { id: 8, word: 'house', phonetic: '/haʊs/', chinese: '房子', level: 'primary' },
+                    { id: 9, word: 'ice', phonetic: '/aɪs/', chinese: '冰', level: 'primary' },
+                    { id: 10, word: 'juice', phonetic: '/dʒuːs/', chinese: '果汁', level: 'primary' },
+                    { id: 11, word: 'ability', phonetic: '/əˈbɪləti/', chinese: '能力', level: 'middle' },
+                    { id: 12, word: 'able', phonetic: '/ˈeɪbl/', chinese: '能够的', level: 'middle' },
+                    { id: 13, word: 'about', phonetic: '/əˈbaʊt/', chinese: '关于', level: 'middle' },
+                    { id: 14, word: 'above', phonetic: '/əˈbʌv/', chinese: '在...上面', level: 'middle' },
+                    { id: 15, word: 'absent', phonetic: '/ˈæbsənt/', chinese: '缺席的', level: 'middle' },
+                    { id: 16, word: 'absolute', phonetic: '/ˈæbsəluːt/', chinese: '绝对的', level: 'middle' },
+                    { id: 17, word: 'academic', phonetic: '/ˌækəˈdemɪk/', chinese: '学术的', level: 'middle' },
+                    { id: 18, word: 'accept', phonetic: '/əkˈsept/', chinese: '接受', level: 'middle' },
+                    { id: 19, word: 'access', phonetic: '/ˈækses/', chinese: '进入', level: 'middle' },
+                    { id: 20, word: 'accident', phonetic: '/ˈæksɪdənt/', chinese: '事故', level: 'middle' }
+                ];
+                localStorage.setItem(STORAGE_KEYS.WORDS, JSON.stringify(defaultWords));
+            }
+
+            if (!localStorage.getItem(STORAGE_KEYS.HISTORY)) {
+                localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify([]));
+            }
+
+            if (!localStorage.getItem(STORAGE_KEYS.ERRORS)) {
+                localStorage.setItem(STORAGE_KEYS.ERRORS, JSON.stringify([]));
+            }
+        }
+
+        // 获取数据
+        function getData(key) {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : [];
+        }
+
+        // 保存数据
+        function saveData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+
+
+
+
+
+        // 初始化语音功能
+        function initSpeech() {
+            if (!('speechSynthesis' in window)) {
+                alert('您的浏览器不支持语音合成功能');
+                return;
+            }
+            
+            // 加载发音人列表
+            loadVoices();
+            
+            // 发音人列表变化时重新加载
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        // 加载发音人
+        function loadVoices() {
+            const voices = speechSynthesis.getVoices();
+            console.log('可用发音人数量:', voices.length);
+        }
+
+        // 播放单词发音
+        function speakWord(word) {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.rate = parseFloat(document.getElementById('rate').value) || 0.8;
+            
+            speechSynthesis.speak(utterance);
+            return utterance;
+        }
+
+        // 获取百度API的Access Token
+        function getBaiduAccessToken() {
+            const apiKey = document.getElementById('baidu-api-key').value.trim();
+            const secretKey = document.getElementById('baidu-secret-key').value.trim();
+            
+            if (!apiKey || !secretKey) {
+                alert('请填写百度API Key和Secret Key');
+                return Promise.reject('缺少API密钥');
+            }
+            
+            // 检查token是否有效
+            if (baiduAccessToken && Date.now() < baiduTokenExpire) {
+                return Promise.resolve(baiduAccessToken);
+            }
+            
+            // 发送请求获取token
+            return fetch(`https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.access_token) {
+                        baiduAccessToken = data.access_token;
+                        baiduTokenExpire = Date.now() + (data.expires_in - 300) * 1000; // 提前5分钟过期
+                        return baiduAccessToken;
+                    } else {
+                        throw new Error('获取百度Token失败');
+                    }
+                });
+        }
+
+        // 使用百度语音合成API
+        function speakWithBaiduTTS(word) {
+            return getBaiduAccessToken()
+                .then(token => {
+                    const url = `https://tsn.baidu.com/text2audio`;
+                    const params = new URLSearchParams({
+                        tex: word,
+                        lan: 'en',
+                        tok: token,
+                        ctp: 1,
+                        cuid: 'dictation_app',
+                        spd: 5,
+                        pit: 5,
+                        vol: 5,
+                        per: 4 // 英语发音人
+                    });
+                    
+                    return fetch(`${url}?${params.toString()}`)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            const audio = new Audio(URL.createObjectURL(blob));
+                            return audio.play();
+                        });
+                });
+        }
+
+        // 播放单词（根据选择的服务）
+        function playWord(word) {
+            // 优先使用听写设置中的语音服务
+            const dictationTTS = document.getElementById('dictation-tts-service');
+            const ttsService = dictationTTS ? dictationTTS.value : document.getElementById('tts-service').value;
+            
+            if (ttsService === 'youdao') {
+                speakWithYoudaoTTS(word)
+                    .catch(error => {
+                        console.error('有道TTS失败，使用浏览器内置语音:', error);
+                        speakWord(word);
+                    });
+            } else if (ttsService === 'baidu') {
+                speakWithBaiduFreeTTS(word)
+                    .catch(error => {
+                        console.error('百度TTS失败，使用浏览器内置语音:', error);
+                        speakWord(word);
+                    });
+            } else {
+                speakWord(word);
+            }
+        }
+
+        // 使用有道词典发音API（免费，无需注册）
+        function speakWithYoudaoTTS(word) {
+            return new Promise((resolve, reject) => {
+                console.log('使用有道词典发音:', word);
+                const audio = new Audio(`http://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=1`);
+                audio.onended = resolve;
+                audio.onerror = (e) => {
+                    console.error('有道词典发音失败:', e);
+                    reject(e);
+                };
+                audio.play().then(resolve).catch(reject);
+            });
+        }
+
+        // 使用百度翻译发音API（免费，无需注册）
+        function speakWithBaiduFreeTTS(word) {
+            return new Promise((resolve, reject) => {
+                console.log('使用百度翻译发音:', word);
+                const url = `https://fanyi.baidu.com/gettts?lan=en&text=${encodeURIComponent(word)}&spd=3&source=web`;
+                console.log('百度TTS URL:', url);
+                const audio = new Audio(url);
+                audio.onended = resolve;
+                audio.onerror = (e) => {
+                    console.error('百度翻译发音失败:', e);
+                    reject(e);
+                };
+                audio.play().then(resolve).catch(reject);
+            });
+        }
+
+        // 测试音频
+        function testAudio() {
+            console.log('测试音频播放');
+            playWord('Hello, this is a test');
+        }
+
+        // MD5签名生成函数
+        function md5(str) {
+            function rotateLeft(n, s) {
+                return (n << s) | (n >>> (32 - s));
+            }
+            function addUnsigned(x, y) {
+                var lsw = (x & 0xFFFF) + (y & 0xFFFF);
+                var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+                return (msw << 16) | (lsw & 0xFFFF);
+            }
+            function reverseEndianness(x) {
+                return ((x << 24) & 0xFF000000) |
+                       ((x << 8) & 0x00FF0000) |
+                       ((x >> 8) & 0x0000FF00) |
+                       ((x >> 24) & 0x000000FF);
+            }
+            function wordToHexString(l) {
+                var s = '', v;
+                for (var i = 0; i <= 3; i++) {
+                    v = (l >> (i * 8)) & 0xff;
+                    s += ((v < 16) ? '0' : '') + v.toString(16);
+                }
+                return s;
+            }
+
+            var x = [];
+            var k, AA, BB, CC, DD, a, b, c, d, sz;
+            var pad = 0x80;
+            var len = str.length * 8;
+            var n = len + 64;
+            var m = (n - (n % 512)) / 512;
+            var msg = [];
+
+            for (var i = 0; i < m; i++) {
+                msg[i] = [];
+                for (var j = 0; j < 16; j++) {
+                    msg[i][j] = 0;
+                }
+            }
+
+            for (i = 0; i < str.length; i++) {
+                sz = i * 8;
+                msg[sz >> 9][(sz % 512) >> 5] |= str.charCodeAt(i) << (sz % 32);
+            }
+
+            sz = str.length * 8;
+            msg[sz >> 9][(sz % 512) >> 5] |= pad << (sz % 32);
+
+            if ((n % 512) === 0) {
+                msg[m - 1][15] = reverseEndianness(len);
+            } else {
+                msg[m][15] = reverseEndianness(len);
+            }
+
+            k = [
+                0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
+                0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
+                0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
+                0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
+                0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa,
+                0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
+                0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed,
+                0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
+                0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c,
+                0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
+                0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05,
+                0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
+                0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039,
+                0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
+                0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
+                0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
+            ];
+
+            s = [
+                7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+                5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+                4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+                6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
+            ];
+
+            AA = 0x67452301;
+            BB = 0xefcdab89;
+            CC = 0x98badcfe;
+            DD = 0x10325476;
+
+            for (i = 0; i < m; i++) {
+                a = AA;
+                b = BB;
+                c = CC;
+                d = DD;
+
+                for (var j = 0; j < 64; j++) {
+                    if (j < 16) {
+                        x = (b & c) | ((~b) & d);
+                        y = j;
+                    } else if (j < 32) {
+                        x = (d & b) | ((~d) & c);
+                        y = (5 * j + 1) % 16;
+                    } else if (j < 48) {
+                        x = b ^ c ^ d;
+                        y = (3 * j + 5) % 16;
+                    } else {
+                        x = c ^ (b | (~d));
+                        y = (7 * j) % 16;
+                    }
+
+                    x = addUnsigned(x, addUnsigned(a, addUnsigned(k[j], msg[i][y])));
+                    a = d;
+                    d = c;
+                    c = b;
+                    b = addUnsigned(b, rotateLeft(x, s[j]));
+                }
+
+                AA = addUnsigned(AA, a);
+                BB = addUnsigned(BB, b);
+                CC = addUnsigned(CC, c);
+                DD = addUnsigned(DD, d);
+            }
+
+            return wordToHexString(AA) + wordToHexString(BB) + wordToHexString(CC) + wordToHexString(DD);
+        }
+
+        // 百度翻译API配置
+        const baiduTranslateConfig = {
+            appid: '20260417002596610', // 用户提供的APP ID
+            secretKey: 'rdsVqgtqEcJ6rc20rVF' // 用户提供的密钥
+        };
+
+        // 使用百度翻译API获取单词翻译
+        async function translateWithBaidu(word) {
+            try {
+                const { appid, secretKey } = baiduTranslateConfig;
+                if (!appid || !secretKey) {
+                    console.warn('百度翻译API配置未设置');
+                    return '';
+                }
+
+                // 生成随机salt
+                const salt = Math.floor(Math.random() * 10000000000).toString();
+                // 生成签名
+                const sign = md5(appid + word + salt + secretKey);
+                
+                console.log('百度翻译API调用:', {
+                    word,
+                    appid,
+                    salt,
+                    sign
+                });
+                
+                // 调用百度翻译API
+                const url = `https://fanyi-api.baidu.com/api/trans/vip/translate`;
+                const response = await fetch(`${url}?q=${encodeURIComponent(word)}&from=en&to=zh&appid=${appid}&salt=${salt}&sign=${sign}`);
+                
+                console.log('百度翻译API响应状态:', response.status);
+                const data = await response.json();
+                
+                console.log('百度翻译API响应数据:', data);
+
+                if (data.trans_result && data.trans_result.length > 0) {
+                    return data.trans_result[0].dst;
+                }
+                return '';
+            } catch (error) {
+                console.error('百度翻译API调用失败:', error);
+                return '';
+            }
+        }
+
+        // 本地单词翻译字典
+        const wordDictionary = {
+            'apple': '苹果',
+            'banana': '香蕉',
+            'orange': '橙子',
+            'grape': '葡萄',
+            'watermelon': '西瓜',
+            'January': '一月',
+            'February': '二月',
+            'March': '三月',
+            'April': '四月',
+            'May': '五月',
+            'June': '六月',
+            'July': '七月',
+            'August': '八月',
+            'September': '九月',
+            'October': '十月',
+            'November': '十一月',
+            'December': '十二月',
+            'Monday': '星期一',
+            'Tuesday': '星期二',
+            'Wednesday': '星期三',
+            'Thursday': '星期四',
+            'Friday': '星期五',
+            'Saturday': '星期六',
+            'Sunday': '星期日',
+            'cat': '猫',
+            'dog': '狗',
+            'bird': '鸟',
+            'fish': '鱼',
+            'mouse': '老鼠',
+            'book': '书',
+            'pen': '钢笔',
+            'pencil': '铅笔',
+            'paper': '纸',
+            'school': '学校',
+            'teacher': '老师',
+            'student': '学生',
+            'friend': '朋友',
+            'family': '家庭',
+            'father': '父亲',
+            'mother': '母亲',
+            'brother': '兄弟',
+            'sister': '姐妹',
+            'happy': '快乐',
+            'sad': '悲伤',
+            'angry': '生气',
+            'tired': '疲倦',
+            'excited': '兴奋',
+            'big': '大',
+            'small': '小',
+            'tall': '高',
+            'short': '矮',
+            'long': '长',
+            'short': '短',
+            'good': '好',
+            'bad': '坏',
+            'hot': '热',
+            'cold': '冷',
+            'warm': '温暖',
+            'cool': '凉爽',
+            'red': '红色',
+            'blue': '蓝色',
+            'green': '绿色',
+            'yellow': '黄色',
+            'black': '黑色',
+            'white': '白色',
+            'brown': '棕色',
+            'purple': '紫色',
+            'pink': '粉色',
+            'orange': '橙色',
+            'one': '一',
+            'two': '二',
+            'three': '三',
+            'four': '四',
+            'five': '五',
+            'six': '六',
+            'seven': '七',
+            'eight': '八',
+            'nine': '九',
+            'ten': '十',
+            'eleven': '十一',
+            'twelve': '十二',
+            'thirteen': '十三',
+            'fourteen': '十四',
+            'fifteen': '十五',
+            'sixteen': '十六',
+            'seventeen': '十七',
+            'eighteen': '十八',
+            'nineteen': '十九',
+            'twenty': '二十',
+            'thirty': '三十',
+            'forty': '四十',
+            'fifty': '五十',
+            'sixty': '六十',
+            'seventy': '七十',
+            'eighty': '八十',
+            'ninety': '九十',
+            'hundred': '百',
+            'thousand': '千',
+            'million': '百万',
+            'hello': '你好',
+            'hi': '嗨',
+            'bye': '再见',
+            'goodbye': '再见',
+            'thank': '谢谢',
+            'thanks': '谢谢',
+            'please': '请',
+            'sorry': '对不起',
+            'excuse': '打扰',
+            'yes': '是',
+            'no': '否',
+            'maybe': '也许',
+            'sure': '当然',
+            'okay': '好的',
+            'ok': '好的',
+            'right': '对',
+            'wrong': '错',
+            'true': '真',
+            'false': '假',
+            'big': '大',
+            'small': '小',
+            'fast': '快',
+            'slow': '慢',
+            'old': '老',
+            'young': '年轻',
+            'new': '新',
+            'old': '旧',
+            'beautiful': '美丽',
+            'ugly': '丑陋',
+            'smart': '聪明',
+            'stupid': '愚蠢',
+            'kind': '善良',
+            'mean': '刻薄',
+            'brave': '勇敢',
+            'coward': '胆小',
+            'strong': '强壮',
+            'weak': '虚弱',
+            'healthy': '健康',
+            'sick': '生病',
+            'happy': '快乐',
+            'sad': '悲伤',
+            'angry': '生气',
+            'calm': '平静',
+            'excited': '兴奋',
+            'bored': '无聊',
+            'hungry': '饥饿',
+            'full': '饱',
+            'thirsty': '口渴',
+            'tired': '疲倦',
+            'energetic': '精力充沛',
+            'sleepy': '困',
+            'awake': '醒',
+            'early': '早',
+            'late': '晚',
+            'first': '第一',
+            'last': '最后',
+            'top': '顶部',
+            'bottom': '底部',
+            'left': '左',
+            'right': '右',
+            'front': '前',
+            'back': '后',
+            'above': '在上面',
+            'below': '在下面',
+            'inside': '在里面',
+            'outside': '在外面',
+            'near': '附近',
+            'far': '远',
+            'close': '近',
+            'open': '打开',
+            'close': '关闭',
+            'start': '开始',
+            'end': '结束',
+            'begin': '开始',
+            'finish': '结束',
+            'play': '玩',
+            'work': '工作',
+            'study': '学习',
+            'teach': '教',
+            'learn': '学',
+            'read': '读',
+            'write': '写',
+            'listen': '听',
+            'speak': '说',
+            'watch': '看',
+            'see': '看',
+            'hear': '听',
+            'smell': '闻',
+            'taste': '尝',
+            'touch': '摸',
+            'feel': '感觉',
+            'think': '想',
+            'know': '知道',
+            'understand': '理解',
+            'remember': '记住',
+            'forget': '忘记',
+            'love': '爱',
+            'hate': '恨',
+            'like': '喜欢',
+            'dislike': '不喜欢',
+            'want': '想要',
+            'need': '需要',
+            'have': '有',
+            'don\'t have': '没有',
+            'get': '得到',
+            'give': '给',
+            'take': '拿',
+            'bring': '带来',
+            'carry': '携带',
+            'hold': '持有',
+            'keep': '保持',
+            'lose': '丢失',
+            'find': '找到',
+            'hide': '隐藏',
+            'show': '显示',
+            'tell': '告诉',
+            'ask': '问',
+            'answer': '回答',
+            'help': '帮助',
+            'hurt': '伤害',
+            'save': '保存',
+            'spend': '花费',
+            'earn': '赚',
+            'buy': '买',
+            'sell': '卖',
+            'cost': '花费',
+            'pay': '支付',
+            'receive': '接收',
+            'send': '发送',
+            'borrow': '借',
+            'lend': '借出',
+            'return': '归还',
+            'move': '移动',
+            'stop': '停止',
+            'go': '去',
+            'come': '来',
+            'leave': '离开',
+            'arrive': '到达',
+            'stay': '停留',
+            'walk': '走',
+            'run': '跑',
+            'jump': '跳',
+            'climb': '爬',
+            'swim': '游泳',
+            'fly': '飞',
+            'drive': '驾驶',
+            'ride': '骑',
+            'travel': '旅行',
+            'explore': '探索',
+            'discover': '发现',
+            'invent': '发明',
+            'create': '创造',
+            'build': '建造',
+            'destroy': '摧毁',
+            'make': '制造',
+            'break': '打破',
+            'fix': '修理',
+            'repair': '修理',
+            'clean': '清洁',
+            'dirty': '脏',
+            'wash': '洗',
+            'dry': '干',
+            'cook': '烹饪',
+            'eat': '吃',
+            'drink': '喝',
+            'cut': '切',
+            'paste': '粘贴',
+            'copy': '复制',
+            'paste': '粘贴',
+            'delete': '删除',
+            'add': '添加',
+            'remove': '移除',
+            'increase': '增加',
+            'decrease': '减少',
+            'rise': '上升',
+            'fall': '下降',
+            'grow': '生长',
+            'shrink': '收缩',
+            'expand': '膨胀',
+            'contract': '收缩',
+            'open': '打开',
+            'close': '关闭',
+            'turn on': '打开',
+            'turn off': '关闭',
+            'start': '开始',
+            'stop': '停止',
+            'begin': '开始',
+            'end': '结束',
+            'play': '播放',
+            'pause': '暂停',
+            'stop': '停止',
+            'rewind': '倒带',
+            'fast forward': '快进',
+            'volume up': '音量增加',
+            'volume down': '音量减少',
+            'brightness up': '亮度增加',
+            'brightness down': '亮度减少',
+            'temperature up': '温度增加',
+            'temperature down': '温度减少',
+            'pressure up': '压力增加',
+            'pressure down': '压力减少',
+            'speed up': '速度增加',
+            'slow down': '速度减少',
+            'accelerate': '加速',
+            'decelerate': '减速',
+            'hurry': '匆忙',
+            'wait': '等待',
+            'rush': '匆忙',
+            'calm': '平静',
+            'panic': '恐慌',
+            'relax': '放松',
+            'stress': '压力',
+            'focus': '专注',
+            'distract': '分心',
+            'concentrate': '集中',
+            'disperse': '分散',
+            'unite': '团结',
+            'divide': '分裂',
+            'join': '加入',
+            'leave': '离开',
+            'connect': '连接',
+            'disconnect': '断开',
+            'combine': '结合',
+            'separate': '分离',
+            'mix': '混合',
+            'separate': '分离',
+            'blend': '混合',
+            'separate': '分离',
+            'merge': '合并',
+            'split': '分裂',
+            'attach': '附加',
+            'detach': '分离',
+            'link': '链接',
+            'unlink': '取消链接',
+            'tie': '系',
+            'untie': '解开',
+            'lock': '锁',
+            'unlock': '解锁',
+            'year': '年',
+            'contest': '比赛',
+            'labour': '劳动',
+            'a few': '一些',
+            'the Great Wall': '长城',
+            'sports meet': '运动会',
+            'Labour Day': '劳动节'
+        };
+
+        // 获取单词翻译（使用百度翻译API）
+        async function getTranslation(word) {
+            try {
+                const baiduTranslation = await translateWithBaidu(word);
+                if (baiduTranslation) {
+                    return baiduTranslation;
+                }
+            } catch (error) {
+                console.error('百度翻译API调用失败:', error);
+            }
+            return '无法翻译';
+        }
+
+        // 开始听写
+        async function startDictation() {
+            const mode = 'listen'; // 固定为听力听写模式
+            const content = document.getElementById('dictation-content').value.trim();
+            const repeatCount = parseInt(document.getElementById('repeat-count').value);
+            const interval = parseInt(document.getElementById('interval').value);
+            const shufflePlay = document.getElementById('shuffle-play').checked;
+
+            if (!content) {
+                alert('请输入要听写的单词');
+                return;
+            }
+
+            // 解析用户输入的单词，每行一个
+            const lines = content.split('\n');
+            let words = lines
+                .map(line => line.trim())
+                .filter(line => line !== '')
+                .map(wordText => ({
+                    id: Date.now() + Math.random(),
+                    word: wordText,
+                    chinese: '', // 中文释义留空，后续通过API获取
+                    level: 'primary' // 默认为小学级别
+                }));
+
+            if (words.length === 0) {
+                alert('请输入有效的单词');
+                return;
+            }
+
+            // 异步获取所有单词的翻译
+            for (let i = 0; i < words.length; i++) {
+                words[i].chinese = await getTranslation(words[i].word);
+            }
+
+            // 如果选择了乱序播放，打乱单词顺序
+            if (shufflePlay) {
+                words = words.sort(() => 0.5 - Math.random());
+            }
+
+            dictationState = {
+                words: words,
+                mode,
+                currentIndex: 0,
+                answers: [],
+                correctCount: 0,
+                wrongCount: 0,
+                repeatCount: repeatCount,
+                interval: interval,
+                currentRepeat: 0,
+                isPaused: false,
+                isStopped: false
+            };
+
+            // 隐藏首页设置，显示听写过程
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('dictation').classList.remove('hidden');
+            document.querySelector('#dictation > .card:first-child').classList.add('hidden');
+            document.getElementById('dictation-process').classList.remove('hidden');
+            document.getElementById('dictation-result').classList.add('hidden');
+
+            // 初始化UI
+            document.getElementById('result-total').textContent = words.length;
+            document.getElementById('result-correct').textContent = '0';
+            document.getElementById('result-wrong').textContent = '0';
+            document.getElementById('result-accuracy').textContent = '0%';
+            document.getElementById('total-steps').textContent = words.length;
+            document.getElementById('current-step').textContent = '0';
+
+            // 开始播放第一个单词
+            playNextWord();
+        }
+
+        // 播放下一个单词
+        function playNextWord() {
+            if (dictationState.isStopped) return;
+            if (dictationState.isPaused) return;
+
+            const currentWord = dictationState.words[dictationState.currentIndex];
+            if (!currentWord) {
+                // 所有单词都播放完毕
+                showDictationResult();
+                return;
+            }
+
+            // 更新UI
+            document.getElementById('current-step').textContent = dictationState.currentIndex + 1;
+            document.getElementById('dictation-prompt').textContent = dictationState.mode === 'listen' ? '请听单词' : 
+                                                                   dictationState.mode === 'chinese' ? '请写出对应的英文' : '请写出对应的中文';
+            
+            if (dictationState.mode === 'listen') {
+                document.getElementById('current-word').textContent = '---';
+            } else if (dictationState.mode === 'chinese') {
+                document.getElementById('current-word').textContent = currentWord.chinese;
+            } else {
+                document.getElementById('current-word').textContent = currentWord.word;
+            }
+
+            // 重置重复计数
+            dictationState.currentRepeat = 0;
+            
+            // 开始播放当前单词
+            playCurrentWordRepeatedly();
+        }
+
+        // 重复播放当前单词
+        function playCurrentWordRepeatedly() {
+            if (dictationState.isStopped) return;
+            if (dictationState.isPaused) return;
+
+            const currentWord = dictationState.words[dictationState.currentIndex];
+            if (!currentWord) return;
+
+            // 更新重复状态
+            dictationState.currentRepeat++;
+            document.getElementById('repeat-status').textContent = `播放中 ${dictationState.currentRepeat}/${dictationState.repeatCount}`;
+            
+            // 播放单词
+            const wordToPlay = dictationState.mode === 'chinese' ? currentWord.word : currentWord.word;
+            playWord(wordToPlay);
+
+            // 更新进度条
+            updateProgressBar();
+
+            // 如果还需要重复播放
+            if (dictationState.currentRepeat < dictationState.repeatCount) {
+                setTimeout(playCurrentWordRepeatedly, dictationState.interval * 1000);
+            } else {
+                // 播放完毕，等待间隔后进入下一个单词
+                setTimeout(() => {
+                    if (!dictationState.isStopped && !dictationState.isPaused) {
+                        dictationState.currentIndex++;
+                        playNextWord();
+                    }
+                }, dictationState.interval * 1000);
+            }
+        }
+
+        // 播放当前单词
+        function playCurrentWord() {
+            const currentWord = dictationState.words[dictationState.currentIndex];
+            if (currentWord) {
+                const wordToPlay = dictationState.mode === 'chinese' ? currentWord.word : currentWord.word;
+                playWord(wordToPlay);
+            }
+        }
+
+        // 更新进度条
+        function updateProgressBar() {
+            const totalSteps = dictationState.words.length * dictationState.repeatCount;
+            const currentStep = dictationState.currentIndex * dictationState.repeatCount + dictationState.currentRepeat;
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            if (dictationState.isPaused) {
+                // 如果是暂停状态，点击下一题恢复播放
+                togglePause();
+                return;
+            }
+
+            const currentWord = dictationState.words[dictationState.currentIndex];
+            if (!currentWord) return;
+
+            let isCorrect = false;
+            const userInput = document.getElementById('user-input').value.trim().toLowerCase();
+
+            if (dictationState.mode === 'listen') {
+                // 听力听写模式，直接进入下一题
+                isCorrect = true;
+            } else if (dictationState.mode === 'chinese') {
+                // 看中文写英文
+                isCorrect = userInput === currentWord.word.toLowerCase();
+            } else {
+                // 看英文写中文
+                isCorrect = userInput === currentWord.chinese.toLowerCase();
+            }
+
+            // 记录答案
+            dictationState.answers.push({
+                word: currentWord,
+                userAnswer: userInput,
+                correct: isCorrect
+            });
+
+            if (isCorrect) {
+                dictationState.correctCount++;
+            } else {
+                dictationState.wrongCount++;
+            }
+
+            // 清空输入框
+            document.getElementById('user-input').value = '';
+
+            // 进入下一题
+            dictationState.currentIndex++;
+            playNextWord();
+        }
+
+        // 切换暂停/继续
+        function togglePause() {
+            dictationState.isPaused = !dictationState.isPaused;
+            updatePauseButton();
+
+            if (!dictationState.isPaused) {
+                // 恢复播放
+                if (dictationState.currentIndex < dictationState.words.length) {
+                    playCurrentWordRepeatedly();
+                }
+            }
+        }
+
+        // 更新暂停按钮
+        function updatePauseButton() {
+            const btnPause = document.getElementById('btn-pause');
+            if (btnPause) {
+                if (dictationState.isPaused) {
+                    btnPause.innerHTML = '<i class="fa fa-play"></i> 继续';
+                    btnPause.classList.remove('btn-warning');
+                    btnPause.classList.add('btn-success');
+                } else {
+                    btnPause.innerHTML = '<i class="fa fa-pause"></i> 暂停';
+                    btnPause.classList.remove('btn-success');
+                    btnPause.classList.add('btn-warning');
+                }
+            }
+        }
+
+        // 停止听写
+        function stopDictation() {
+            dictationState.isStopped = true;
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+            showDictationResult();
+        }
+
+        // 显示听写结果
+        function showDictationResult() {
+            document.getElementById('dictation-process').classList.add('hidden');
+            document.getElementById('dictation-result').classList.remove('hidden');
+
+            // 更新统计信息
+            document.getElementById('result-total').textContent = dictationState.words.length;
+            document.getElementById('result-correct').textContent = dictationState.correctCount;
+            document.getElementById('result-wrong').textContent = dictationState.wrongCount;
+            document.getElementById('result-accuracy').textContent = `${Math.round((dictationState.correctCount / dictationState.words.length) * 100)}%`;
+
+            // 显示详细结果
+            const resultList = document.getElementById('result-list');
+            let html = '';
+
+            // 按播放顺序显示结果
+            dictationState.words.forEach((word, index) => {
+                const answer = dictationState.answers[index];
+                const isCorrect = answer && answer.correct;
+                
+                html += `
+                    <div class="result-item" style="margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.9rem;">
+                        <div style="font-weight: bold; margin-bottom: 0.25rem;">第 ${index + 1} 题</div>
+                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+                            <div>单词: <span style="font-weight: bold;">${word.word}</span></div>
+                            <div>翻译: ${word.chinese || '（翻译中...）'}</div>
+                        </div>
+                        ${dictationState.mode !== 'listen' ? `
+                            <div style="margin-top: 0.25rem;">
+                                你的答案: <span ${isCorrect ? 'style="color: #48bb78; font-weight: bold;"' : 'style="color: #f56565; font-weight: bold;"'}>
+                                    ${answer ? answer.userAnswer : '未作答'}
+                                </span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            resultList.innerHTML = html;
+        }
+
+        // 重新听写
+        async function restartDictation() {
+            document.getElementById('dictation-result').classList.add('hidden');
+            document.getElementById('dictation-process').classList.add('hidden');
+            document.getElementById('dictation').classList.add('hidden');
+            document.getElementById('home').classList.remove('hidden');
+            await startDictation();
+        }
+
+
+
+
+        // 初始化
+        initData();
+        initSpeech();
+    </script>
+</body>
+</html>
