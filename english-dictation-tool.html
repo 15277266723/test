@@ -1432,23 +1432,10 @@
 
             // 按播放顺序显示结果
             dictationState.words.forEach((word, index) => {
-                const answer = dictationState.answers[index];
-                const isCorrect = answer && answer.correct;
-                
                 html += `
-                    <div class="result-item" style="margin-bottom: 0.5rem; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 0.9rem;">
-                        <div style="font-weight: bold; margin-bottom: 0.25rem;">第 ${index + 1} 题</div>
-                        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
-                            <div>单词: <span style="font-weight: bold;">${word.word}</span></div>
-                            <div>翻译: ${word.chinese || '（翻译中...）'}</div>
-                        </div>
-                        ${dictationState.mode !== 'listen' ? `
-                            <div style="margin-top: 0.25rem;">
-                                你的答案: <span ${isCorrect ? 'style="color: #48bb78; font-weight: bold;"' : 'style="color: #f56565; font-weight: bold;"'}>
-                                    ${answer ? answer.userAnswer : '未作答'}
-                                </span>
-                            </div>
-                        ` : ''}
+                    <div class="result-item" style="margin-bottom: 0.25rem; font-size: 0.9rem;">
+                        <span style="font-weight: bold;">${word.word}</span>
+                        ${word.chinese && word.chinese !== '无法翻译' ? ` - ${word.chinese}` : ''}
                     </div>
                 `;
             });
