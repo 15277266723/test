@@ -271,15 +271,19 @@
                 <div class="form-group">
                     <label>语音合成服务</label>
                     <select class="form-control" id="dictation-tts-service" style="max-width: 300px;">
-                        <option value="web-speech">浏览器内置语音</option>
                         <option value="youdao" selected>有道词典发音</option>
                         <option value="baidu">百度翻译发音</option>
                     </select>
                 </div>
 
-                <button class="btn btn-primary" onclick="startDictation()">
-                    <i class="fa fa-play"></i> 开始听写
-                </button>
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="startDictation()">
+                        <i class="fa fa-play"></i> 开始听写
+                    </button>
+                    <button class="btn btn-info" onclick="testAudio()" style="margin-left: 1rem;">
+                        <i class="fa fa-volume-up"></i> 测试音频
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -344,15 +348,22 @@
                 <div class="form-group">
                     <label>语音合成服务</label>
                     <select class="form-control" id="dictation-tts-service" style="max-width: 300px;">
-                        <option value="web-speech">浏览器内置语音</option>
                         <option value="youdao" selected>有道词典发音</option>
                         <option value="baidu">百度翻译发音</option>
                     </select>
                 </div>
 
-                <button class="btn btn-primary" onclick="startDictation()">
-                    <i class="fa fa-play"></i> 开始听写
-                </button>
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-primary" onclick="startDictation()">
+                        <i class="fa fa-play"></i> 开始听写
+                    </button>
+                    <button class="btn btn-info" onclick="testAudio()" style="margin-left: 1rem;">
+                        <i class="fa fa-volume-up"></i> 测试音频
+                    </button>
+                    <button class="btn btn-secondary" onclick="testYoudaoTTS()" style="margin-left: 1rem;">
+                        <i class="fa fa-microphone"></i> 测试有道TTS
+                    </button>
+                </div>
             </div>
 
             <!-- 听写过程 -->
@@ -392,6 +403,9 @@
                         <button class="btn btn-success" onclick="checkAnswer()">
                             <i class="fa fa-check"></i> 下一题
                         </button>
+                        <button class="btn btn-primary" onclick="completeDictation()" style="margin-left: 1rem;">
+                            <i class="fa fa-check-circle"></i> 完成
+                        </button>
                     </div>
                 </div>
             </div>
@@ -422,6 +436,9 @@
                 <div style="margin-top: 1.5rem;">
                     <button class="btn btn-primary" onclick="restartDictation()">
                         <i class="fa fa-refresh"></i> 重新听写
+                    </button>
+                    <button class="btn btn-secondary" onclick="backToSettings()" style="margin-left: 1rem;">
+                        <i class="fa fa-arrow-left"></i> 返回设置
                     </button>
                 </div>
 
@@ -521,15 +538,24 @@
 
         // 播放单词发音
         function speakWord(word) {
-            if (speechSynthesis.speaking) {
-                speechSynthesis.cancel();
-            }
-            
-            const utterance = new SpeechSynthesisUtterance(word);
-            utterance.rate = parseFloat(document.getElementById('rate').value) || 0.8;
-            
-            speechSynthesis.speak(utterance);
-            return utterance;
+            return new Promise((resolve, reject) => {
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.rate = parseFloat(document.getElementById('rate').value) || 0.8;
+                utterance.volume = 1.0; // 最大音量
+                
+                utterance.onend = resolve;
+                utterance.onerror = reject;
+                
+                try {
+                    speechSynthesis.speak(utterance);
+                } catch (error) {
+                    reject(error);
+                }
+            });
         }
 
         // 获取百度API的Access Token
@@ -574,7 +600,7 @@
                         cuid: 'dictation_app',
                         spd: 5,
                         pit: 5,
-                        vol: 5,
+                        vol: 8, // 增大音量
                         per: 4 // 英语发音人
                     });
                     
@@ -596,17 +622,22 @@
             if (ttsService === 'youdao') {
                 speakWithYoudaoTTS(word)
                     .catch(error => {
-                        console.error('有道TTS失败，使用浏览器内置语音:', error);
-                        speakWord(word);
+                        console.error('有道TTS失败，使用百度TTS:', error);
+                        speakWithBaiduFreeTTS(word);
                     });
             } else if (ttsService === 'baidu') {
                 speakWithBaiduFreeTTS(word)
                     .catch(error => {
-                        console.error('百度TTS失败，使用浏览器内置语音:', error);
-                        speakWord(word);
+                        console.error('百度TTS失败，使用有道TTS:', error);
+                        speakWithYoudaoTTS(word);
                     });
             } else {
-                speakWord(word);
+                // 默认使用有道TTS
+                speakWithYoudaoTTS(word)
+                    .catch(error => {
+                        console.error('有道TTS失败，使用百度TTS:', error);
+                        speakWithBaiduFreeTTS(word);
+                    });
             }
         }
 
@@ -615,6 +646,7 @@
             return new Promise((resolve, reject) => {
                 console.log('使用有道词典发音:', word);
                 const audio = new Audio(`http://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=1`);
+                audio.volume = 1.0; // 最大音量
                 audio.onended = resolve;
                 audio.onerror = (e) => {
                     console.error('有道词典发音失败:', e);
@@ -628,9 +660,13 @@
         function speakWithBaiduFreeTTS(word) {
             return new Promise((resolve, reject) => {
                 console.log('使用百度翻译发音:', word);
-                const url = `https://fanyi.baidu.com/gettts?lan=en&text=${encodeURIComponent(word)}&spd=3&source=web`;
+                // 根据内容判断语言
+                const isChinese = /[\u4e00-\u9fa5]/.test(word);
+                const lan = isChinese ? 'zh' : 'en';
+                const url = `https://fanyi.baidu.com/gettts?lan=${lan}&text=${encodeURIComponent(word)}&spd=3&source=web`;
                 console.log('百度TTS URL:', url);
                 const audio = new Audio(url);
+                audio.volume = 1.0; // 最大音量
                 audio.onended = resolve;
                 audio.onerror = (e) => {
                     console.error('百度翻译发音失败:', e);
@@ -643,7 +679,64 @@
         // 测试音频
         function testAudio() {
             console.log('测试音频播放');
-            playWord('Hello, this is a test');
+            // 直接使用playWord函数，它会根据设置选择TTS服务
+            playWord('Dictation is complete');
+        }
+
+        // 测试有道词典TTS能否播放英文
+        function testYoudaoTTS() {
+            console.log('测试有道词典TTS播放英文: Dictation is complete');
+            const audio = new Audio(`http://dict.youdao.com/dictvoice?audio=${encodeURIComponent('Dictation is complete')}&type=1`);
+            audio.volume = 1.0;
+            audio.play()
+                .then(() => console.log('有道词典TTS播放成功'))
+                .catch(error => console.error('有道词典TTS播放失败:', error));
+        }
+
+        // 播放完成提示音
+        function playCompletionSound() {
+            console.log('播放完成提示音');
+            
+            const completionText = 'Dictation is over';
+            
+            // 尝试使用有道词典TTS
+            const audio = new Audio(`http://dict.youdao.com/dictvoice?audio=${encodeURIComponent(completionText)}&type=1`);
+            audio.volume = 1.0; // 正常音量
+            console.log('使用有道词典TTS播放提示音:', completionText);
+            
+            audio.onended = function() {
+                console.log('提示音播放完成');
+            };
+            
+            audio.onerror = function(e) {
+                console.error('有道TTS失败，使用百度TTS:', e);
+                // 降级到百度翻译TTS
+                const isChinese = /[\u4e00-\u9fa5]/.test(completionText);
+                const lan = isChinese ? 'zh' : 'en';
+                const url = `https://fanyi.baidu.com/gettts?lan=${lan}&text=${encodeURIComponent(completionText)}&spd=3&source=web`;
+                const baiduAudio = new Audio(url);
+                baiduAudio.volume = 1.0; // 正常音量
+                baiduAudio.onended = function() {
+                    console.log('百度TTS提示音播放完成');
+                };
+                baiduAudio.onerror = function(fallbackError) {
+                    console.error('百度TTS也失败:', fallbackError);
+                };
+                baiduAudio.play();
+            };
+            
+            audio.play().catch(error => {
+                console.error('播放提示音失败:', error);
+                // 降级到百度翻译TTS
+                const isChinese = /[\u4e00-\u9fa5]/.test(completionText);
+                const lan = isChinese ? 'zh' : 'en';
+                const url = `https://fanyi.baidu.com/gettts?lan=${lan}&text=${encodeURIComponent(completionText)}&spd=3&source=web`;
+                const baiduAudio = new Audio(url);
+                baiduAudio.volume = 1.0; // 正常音量
+                baiduAudio.play().catch(fallbackError => {
+                    console.error('百度TTS也失败:', fallbackError);
+                });
+            });
         }
 
         // MD5签名生成函数
@@ -1250,13 +1343,29 @@
 
         // 播放下一个单词
         function playNextWord() {
-            if (dictationState.isStopped) return;
-            if (dictationState.isPaused) return;
+            console.log('playNextWord called, currentIndex:', dictationState.currentIndex, 'words length:', dictationState.words.length);
+            if (dictationState.isStopped) {
+                console.log('Dictation is stopped, returning');
+                return;
+            }
+            if (dictationState.isPaused) {
+                console.log('Dictation is paused, returning');
+                return;
+            }
 
             const currentWord = dictationState.words[dictationState.currentIndex];
+            console.log('Current word:', currentWord);
             if (!currentWord) {
-                // 所有单词都播放完毕
-                showDictationResult();
+                // 所有单词都播放完毕，等待间隔时间后再播放提示音和显示结果
+                console.log('All words played, waiting for interval then playing completion sound and showing result');
+                if (!dictationState.isStopped && !dictationState.isPaused) {
+                    setTimeout(() => {
+                        if (!dictationState.isStopped && !dictationState.isPaused) {
+                            playCompletionSound(); // 播放提示音
+                            showDictationResult(); // 显示结果
+                        }
+                    }, dictationState.interval * 1000); // 等待间隔时间
+                }
                 return;
             }
 
@@ -1277,23 +1386,38 @@
             dictationState.currentRepeat = 0;
             
             // 开始播放当前单词
+            console.log('Starting to play current word repeatedly');
             playCurrentWordRepeatedly();
         }
 
         // 重复播放当前单词
         function playCurrentWordRepeatedly() {
-            if (dictationState.isStopped) return;
-            if (dictationState.isPaused) return;
+            console.log('playCurrentWordRepeatedly called, currentRepeat:', dictationState.currentRepeat, 'repeatCount:', dictationState.repeatCount);
+            if (dictationState.isStopped) {
+                console.log('Dictation is stopped, returning');
+                return;
+            }
+            if (dictationState.isPaused) {
+                console.log('Dictation is paused, returning');
+                return;
+            }
 
             const currentWord = dictationState.words[dictationState.currentIndex];
-            if (!currentWord) return;
+            console.log('Current word in playCurrentWordRepeatedly:', currentWord);
+            if (!currentWord) {
+                console.log('No current word, calling showDictationResult');
+                showDictationResult();
+                return;
+            }
 
             // 更新重复状态
             dictationState.currentRepeat++;
+            console.log('Updated currentRepeat:', dictationState.currentRepeat);
             document.getElementById('repeat-status').textContent = `播放中 ${dictationState.currentRepeat}/${dictationState.repeatCount}`;
             
             // 播放单词
             const wordToPlay = dictationState.mode === 'chinese' ? currentWord.word : currentWord.word;
+            console.log('Playing word:', wordToPlay);
             playWord(wordToPlay);
 
             // 更新进度条
@@ -1301,15 +1425,37 @@
 
             // 如果还需要重复播放
             if (dictationState.currentRepeat < dictationState.repeatCount) {
+                console.log('Need to repeat, scheduling next repeat in', dictationState.interval, 'seconds');
                 setTimeout(playCurrentWordRepeatedly, dictationState.interval * 1000);
             } else {
-                // 播放完毕，等待间隔后进入下一个单词
-                setTimeout(() => {
+                // 播放完毕，检查是否是最后一个单词
+                console.log('Current index:', dictationState.currentIndex);
+                console.log('Words length:', dictationState.words.length);
+                console.log('Is last word:', dictationState.currentIndex >= dictationState.words.length - 1);
+                
+                if (dictationState.currentIndex >= dictationState.words.length - 1) {
+                    // 是最后一个单词，等待间隔时间后再播放提示音和显示结果
+                    console.log('Last word played, waiting for interval then playing completion sound and showing result');
                     if (!dictationState.isStopped && !dictationState.isPaused) {
-                        dictationState.currentIndex++;
-                        playNextWord();
+                        setTimeout(() => {
+                            if (!dictationState.isStopped && !dictationState.isPaused) {
+                                playCompletionSound(); // 播放提示音
+                                showDictationResult(); // 显示结果
+                            }
+                        }, dictationState.interval * 1000); // 等待间隔时间
                     }
-                }, dictationState.interval * 1000);
+                } else {
+                    // 不是最后一个单词，进入下一个单词
+                    console.log('Repeat completed, moving to next word in', dictationState.interval, 'seconds');
+                    setTimeout(() => {
+                        if (!dictationState.isStopped && !dictationState.isPaused) {
+                            console.log('Incrementing currentIndex from', dictationState.currentIndex, 'to', dictationState.currentIndex + 1);
+                            dictationState.currentIndex++;
+                            console.log('Calling playNextWord with new currentIndex:', dictationState.currentIndex);
+                            playNextWord();
+                        }
+                    }, dictationState.interval * 1000);
+                }
             }
         }
 
@@ -1415,12 +1561,59 @@
             showDictationResult();
         }
 
+        // 手动完成听写
+        function completeDictation() {
+            console.log('完成按钮被点击了！');
+            
+            // 直接操作DOM
+            var process = document.getElementById('dictation-process');
+            var result = document.getElementById('dictation-result');
+            
+            if (process) {
+                process.style.display = 'none';
+            }
+            
+            if (result) {
+                result.style.display = 'block';
+            }
+            
+            // 更新结果
+            var total = document.getElementById('result-total');
+            var correct = document.getElementById('result-correct');
+            var wrong = document.getElementById('result-wrong');
+            var accuracy = document.getElementById('result-accuracy');
+            var list = document.getElementById('result-list');
+            
+            if (total) total.innerHTML = dictationState.words.length;
+            if (correct) correct.innerHTML = dictationState.correctCount;
+            if (wrong) wrong.innerHTML = dictationState.wrongCount;
+            if (accuracy) accuracy.innerHTML = Math.round((dictationState.correctCount / dictationState.words.length) * 100) + '%';
+            
+            if (list) {
+                var html = '';
+                for (var i = 0; i < dictationState.words.length; i++) {
+                    var word = dictationState.words[i];
+                    html += '<div style="margin-bottom: 0.25rem; font-size: 1.4rem;"><strong>' + word.word + '</strong>' + (word.chinese && word.chinese !== '无法翻译' ? ' - ' + word.chinese : '') + '</div>';
+                }
+                list.innerHTML = html;
+            }
+            
+            console.log('结果显示完成！');
+        }
+        
+        // 确保函数在全局作用域中
+        window.completeDictation = completeDictation;
+
         // 显示听写结果
         function showDictationResult() {
+            console.log('showDictationResult called');
+            // 隐藏听写过程，显示结果
+            console.log('Hiding dictation-process, showing dictation-result');
             document.getElementById('dictation-process').classList.add('hidden');
             document.getElementById('dictation-result').classList.remove('hidden');
 
             // 更新统计信息
+            console.log('Updating stats, words length:', dictationState.words.length, 'correctCount:', dictationState.correctCount, 'wrongCount:', dictationState.wrongCount);
             document.getElementById('result-total').textContent = dictationState.words.length;
             document.getElementById('result-correct').textContent = dictationState.correctCount;
             document.getElementById('result-wrong').textContent = dictationState.wrongCount;
@@ -1428,10 +1621,13 @@
 
             // 显示详细结果
             const resultList = document.getElementById('result-list');
+            console.log('Showing detailed results, resultList:', resultList);
             let html = '';
 
             // 按播放顺序显示结果
+            console.log('Words array:', dictationState.words);
             dictationState.words.forEach((word, index) => {
+                console.log('Adding word to result:', word);
                 html += `
                     <div class="result-item" style="margin-bottom: 0.25rem; font-size: 1.4rem;">
                         <span style="font-weight: bold;">${word.word}</span>
@@ -1441,6 +1637,7 @@
             });
 
             resultList.innerHTML = html;
+            console.log('Result list updated');
         }
 
         // 重新听写
@@ -1450,6 +1647,14 @@
             document.getElementById('dictation').classList.add('hidden');
             document.getElementById('home').classList.remove('hidden');
             await startDictation();
+        }
+
+        // 返回设置界面
+        function backToSettings() {
+            document.getElementById('dictation-result').classList.add('hidden');
+            document.getElementById('dictation-process').classList.add('hidden');
+            document.getElementById('dictation').classList.add('hidden');
+            document.getElementById('home').classList.remove('hidden');
         }
 
 
